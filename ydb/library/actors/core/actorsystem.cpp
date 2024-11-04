@@ -103,6 +103,13 @@ namespace NActors {
 #endif
 
         TActorId recipient = ev->GetRecipientRewrite();
+        with_lock(VisualiseLogLock) {
+            std::string event_name = "-";
+            if (ev->HasEvent()) {
+                std::string event_name = ev->GetBase()->ToString();
+            }
+            std::cerr << "Send" << ' ' << ev->Sender.ToString() << ' ' << recipient.ToString() << ' ' << event_name << std::endl;
+        }
         const ui32 recpNodeId = recipient.NodeId();
 
         if (recpNodeId != NodeId && recpNodeId != 0) {

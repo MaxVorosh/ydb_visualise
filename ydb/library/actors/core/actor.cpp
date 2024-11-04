@@ -472,16 +472,20 @@ namespace NActors {
         Y_ABORT_UNLESS(actor);
         Y_ABORT_UNLESS(executorPool < ExecutorPoolCount, "executorPool# %" PRIu32 ", ExecutorPoolCount# %" PRIu32,
                 (ui32)executorPool, (ui32)ExecutorPoolCount);
+        TActorId id;
         if constexpr (SendingType == ESendingType::Common) {
-            return CpuManager->GetExecutorPool(executorPool)->Register(actor, mailboxType, revolvingCounter, parentId);
+            id = CpuManager->GetExecutorPool(executorPool)->Register(actor, mailboxType, revolvingCounter, parentId);
         } else if (!TlsThreadContext) {
-            return CpuManager->GetExecutorPool(executorPool)->Register(actor, mailboxType, revolvingCounter, parentId);
+            id = CpuManager->GetExecutorPool(executorPool)->Register(actor, mailboxType, revolvingCounter, parentId);
         } else {
             ESendingType previousType = std::exchange(TlsThreadContext->SendingType, SendingType);
-            TActorId id = CpuManager->GetExecutorPool(executorPool)->Register(actor, mailboxType, revolvingCounter, parentId);
+            id = CpuManager->GetExecutorPool(executorPool)->Register(actor, mailboxType, revolvingCounter, parentId);
             TlsThreadContext->SendingType = previousType;
-            return id;
         }
+        with_lock(VisualiseLogLock) {
+            std::cerr << "Register " << id.ToString() << std::endl;
+        }
+        return id;
     }
 
     template bool TActorSystem::Send<ESendingType::Common>(TAutoPtr<IEventHandle> ev) const;
