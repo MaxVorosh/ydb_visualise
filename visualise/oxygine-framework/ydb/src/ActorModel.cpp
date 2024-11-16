@@ -46,3 +46,15 @@ void ActorModel::rename(std::string new_name) {
 void ActorModel::_update(const UpdateState& us)
 {
 }
+
+bool ActorModel::is_visible() {
+    return visible;
+}
+
+void ActorModel::set_visibility(bool new_val) {
+    visible = new_val;
+}
+
+std::string ActorModel::get_name() {
+    return name;
+}

@@ -13,6 +13,9 @@ public:
     void disable();
     void enable();
     void rename(std::string new_name);
+    bool is_visible();
+    void set_visibility(bool new_val);
+    std::string get_name();
 
 protected:
     void _init();
@@ -20,5 +23,6 @@ protected:
 
     spSprite _body;
     std::string name;
+    bool visible = false;
 };
 
