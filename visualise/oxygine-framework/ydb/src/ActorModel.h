@@ -9,6 +9,7 @@ public:
     void move(int x, int y);
     void resize(int x, int y);
     void activate();
+    void deactivate();
     void disable();
     void enable();
     void rename(std::string new_name);

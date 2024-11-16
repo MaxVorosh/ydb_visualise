@@ -27,6 +27,10 @@ void ActorModel::activate() {
     _body->setColor(Color(0, 255, 0));
 }
 
+void ActorModel::deactivate() {
+    _body->setColor(Color(255, 0, 0));
+}
+
 void ActorModel::disable() {
     _body->setVisible(false);
 }

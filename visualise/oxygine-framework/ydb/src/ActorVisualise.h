@@ -7,10 +7,12 @@
 using namespace oxygine;
 
 struct ActorInfo {
-    std::vector<int> pos;
+    int pos;
     std::pair<float, float> coords;
+    int group;
+    int layer;
     ActorInfo();
-    ActorInfo(std::vector<int> _pos, std::pair<float, float> _coords);
+    ActorInfo(int _pos, std::pair<float, float> _coords, int _group, int _layer);
 };
 
 DECLARE_SMART(ArrowPart, spArrowPart);
@@ -33,12 +35,17 @@ private:
     spActorModel get_actor(std::string actor);
     std::pair<float, float> get_actor_coords(std::string actor);
     bool is_actor_valid(std::string actor);
+    void add_new_actor(std::vector<spActorModel>& group, std::string name, int cell_x, int cell_y, int group_number, int layer_number);
+    bool on_screen(std::string actor);
 
     float time = 0;
     const float time_limit = 300;
     int current_index = 0;
     std::map<std::string, ActorInfo> actors_info;
 
-    std::vector<spActorModel> _actors;
+    std::vector<std::vector<std::vector<spActorModel>>> _actors;
     spArrow _arrow;
+
+    int current_group;
+    int current_layer;
 };
