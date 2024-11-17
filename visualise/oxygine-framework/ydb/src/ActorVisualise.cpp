@@ -178,6 +178,7 @@ void ActorVisualise::compute_arrow(std::string from_actor, std::string to_actor)
 void ActorVisualise::draw_arrow() {
     if (arrow_lines.find({current_group, current_layer}) == arrow_lines.end()) {
         _arrow->disable();
+        return;
     }
     auto line = arrow_lines[{current_group, current_layer}];
     _arrow->enable();
@@ -199,7 +200,6 @@ void ActorVisualise::process_stage() {
         }
     }
     else if (stage.type == StageType::Register) {
-        main_actor->set_visibility(true);
         if (on_screen(stage.main_actor)) {
             main_actor->activate();
         }
@@ -211,6 +211,28 @@ void ActorVisualise::process_stage() {
         compute_arrow(stage.main_actor, stage.other_actor);
         draw_arrow();
     }
+}
+
+void ActorVisualise::undo_stage() {
+    _arrow->disable();
+    arrow_lines.clear();
+    StageInfo stage = parser.getStages()[current_index];
+    if (!is_actor_valid(stage.main_actor)) {
+        return;
+    }
+    spActorModel main_actor = get_actor(stage.main_actor);
+    if (stage.type == StageType::New) {
+        main_actor->set_visibility(false);
+        if (on_screen(stage.main_actor)) {
+            main_actor->disable();
+        }
+    }
+    else if (stage.type == StageType::Register) {
+        if (on_screen(stage.main_actor)) {
+            main_actor->deactivate();
+        }
+    }
+    else if (stage.type == StageType::Send) {}
 }
 
 void ActorVisualise::doUpdate(const UpdateState& us)
@@ -225,9 +247,22 @@ void ActorVisualise::doUpdate(const UpdateState& us)
     }
     if (time > time_limit) {
         time = 0;
-        if (current_index < parser.getStages().size()) {
-            process_stage();
-            current_index++;
+        if (on_reverse) {
+            if (current_index > 0) {
+                current_index--;
+                undo_stage();
+                if (current_index > 0) {
+                    current_index--;
+                    process_stage();
+                    current_index++;
+                }
+            }
+        }
+        else {
+            if (current_index < parser.getStages().size()) {
+                process_stage();
+                current_index++;
+            }
         }
     }
 }
@@ -282,8 +317,8 @@ void ActorVisualise::onEvent(Event* ev)
     //all key codes could be found in "SDL_keyboard.h" from SDL
     switch (event->key.keysym.sym)
     {
-        case SDLK_RETURN:
-            //ENTER key was pressed, handle it
+        case SDLK_r:
+            on_reverse = !on_reverse;
             break;
         case SDLK_SPACE:
             on_pause = !on_pause;

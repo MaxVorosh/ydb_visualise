@@ -45,6 +45,7 @@ private:
     friend class Arrow;
     void doUpdate(const UpdateState& us);
     void process_stage();
+    void undo_stage();
     spActorModel get_actor(ActorInfo info);
     spActorModel get_actor(std::string actor);
     std::pair<float, float> get_actor_coords(std::string actor);
@@ -72,5 +73,7 @@ private:
     int current_group;
     int current_layer;
     bool on_pause = false;
+    bool on_reverse = false;
+
     Resources _resources;
 };
