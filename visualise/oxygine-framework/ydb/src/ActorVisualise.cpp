@@ -34,6 +34,7 @@ std::size_t PairHash::operator()(const std::pair<int, int> &p) const noexcept {
 
 ActorVisualise::ActorVisualise() {
     ox::core::getDispatcher()->addEventListener(ox::core::EVENT_SYSTEM, CLOSURE(this, &ActorVisualise::onEvent));
+    _resources.loadXML("res.xml");
 }
 
 void ActorVisualise::add_new_actor(std::vector<spActorModel>& group, std::string name, int cell_x, int cell_y, int group_number, int layer_number) {
@@ -42,12 +43,19 @@ void ActorVisualise::add_new_actor(std::vector<spActorModel>& group, std::string
     group.back()->init(this);
     group.back()->rename(name);
     group.back()->resize(cell_x / 5, cell_y / 5);
+
     int cell_number = (current_actors < 4) ? current_actors : current_actors + 1;
     int column = cell_number % 3;
     int row = cell_number / 3;
     int x_coord = cell_x * column + cell_x / 4 + cell_x / 4 * (row != 1 || column != 0) + cell_x / 4 * (row == 1  && column == 2);
     int y_coord = cell_y * row + cell_y / 2 - cell_y / 8 * (row != 0 || column != 1) + cell_y / 8 * (row == 2 && column == 1);
     group.back()->move(x_coord, y_coord);
+
+    TextStyle style(_resources.getResFont("main"));
+    style.fontSize = 15;
+    style.color = Color(255, 255, 255);
+    group.back()->set_style(style);
+
     group.back()->disable();
     actors_info[name] = ActorInfo(current_actors, {x_coord + cell_x / 10, y_coord + cell_y / 10}, group_number, layer_number);
 }

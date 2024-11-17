@@ -72,4 +72,5 @@ private:
     int current_group;
     int current_layer;
     bool on_pause = false;
+    Resources _resources;
 };

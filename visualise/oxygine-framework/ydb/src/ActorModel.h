@@ -16,13 +16,17 @@ public:
     bool is_visible();
     void set_visibility(bool new_val);
     std::string get_name();
+    void set_style(TextStyle style);
 
 protected:
     void _init();
     void _update(const UpdateState& us);
+    void onClick(Event* ev);
 
     spSprite _body;
+    spTextField _label;
     std::string name;
     bool visible = false;
+    bool visible_text = false;
 };
 
