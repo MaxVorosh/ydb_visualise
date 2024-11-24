@@ -135,6 +135,7 @@ namespace NActors {
 
     public:
         const ui32 NodeId;
+        TMutex VisualiseLogLock; // Temporary solution
 
     private:
         THolder<TCpuManager> CpuManager;
@@ -161,7 +162,6 @@ namespace NActors {
         TIntrusivePtr<NLog::TSettings> LoggerSettings0;
         TProxyWrapperFactory ProxyWrapperFactory;
         TMutex ProxyCreationLock;
-        TMutex VisualiseLogLock; // Temporary solution
         mutable std::vector<TActorId> DynamicProxies;
 
         bool StartExecuted;

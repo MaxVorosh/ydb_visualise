@@ -11,6 +11,10 @@ namespace NActors {
     LWTRACE_USING(ACTORLIB_PROVIDER);
 
     void DoActorInit(TActorSystem* sys, IActor* actor, const TActorId& self, const TActorId& owner) {
+        with_lock(sys->VisualiseLogLock) {
+            std::cerr << "New " << self.ToString() << ' ' << actor->GetActivityType() << std::endl;
+        }
+        // TODO: Not all of actors going through DoActorInit for some reason
         actor->SelfActorId = self;
         actor->DoActorInit();
         actor->Registered(sys, owner);

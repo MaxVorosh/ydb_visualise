@@ -10,6 +10,8 @@
 #include <util/system/tls.h>
 #include <util/generic/noncopyable.h>
 
+#include <iostream>
+
 namespace NActors {
     class TActorSystem;
     class TMailboxTable;
@@ -448,6 +450,7 @@ namespace NActors {
 
     protected:
         void SetActivityType(ui32 activityType) {
+            std::cerr << "ChangeActivityType " << SelfId().ToString() << ' ' << activityType << std::endl;
             ActivityType = activityType;
         }
 
@@ -603,6 +606,7 @@ namespace NActors {
 
     private:
         void ChangeSelfId(TActorId actorId) {
+            std::cout << "ChangeSelfId " << SelfActorId.ToString() << ' ' << actorId.ToString() << std::endl;
             SelfActorId = actorId;
         }
     };
