@@ -15,7 +15,7 @@ void ActorModel::_init()
     _body->addEventListener(TouchEvent::CLICK, CLOSURE(this, &ActorModel::onClick));
 
     _label = new TextField;
-    _label->setSize(10, 100);
+    _label->setSize(100, 10);
     _label->attachTo(_view);
 }
 

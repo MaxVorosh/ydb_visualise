@@ -2,6 +2,7 @@
 #include "ActorModel.h"
 #include "Arrow.h"
 #include "LogParser.h"
+#include "FramedProgressBar.h"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -62,6 +63,8 @@ void ActorVisualise::add_new_actor(std::vector<spActorModel>& group, std::string
 
 void ActorVisualise::init(std::string log_filename)
 {
+    progress_bar = new FramedProgressBar;
+    progress_bar->init(this);
     _arrow = new Arrow;
     _arrow->init(this);
     _arrow->disable();
@@ -265,6 +268,7 @@ void ActorVisualise::doUpdate(const UpdateState& us)
             }
         }
     }
+    progress_bar->setProgress(current_index / (float)parser.getStages().size());
 }
 
 void ActorVisualise::load_new_actors() {

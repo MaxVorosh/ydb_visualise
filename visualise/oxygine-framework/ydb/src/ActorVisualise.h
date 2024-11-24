@@ -28,6 +28,7 @@ struct PairHash {
     std::size_t operator()(const std::pair<int, int> &p) const noexcept;
 };
 
+DECLARE_SMART(FramedProgressBar, spFramedProgressBar);
 DECLARE_SMART(ArrowPart, spArrowPart);
 DECLARE_SMART(Arrow, spArrow);
 DECLARE_SMART(ActorModel, spActorModel);
@@ -74,6 +75,7 @@ private:
     int current_layer;
     bool on_pause = false;
     bool on_reverse = false;
+    spFramedProgressBar progress_bar;
 
     Resources _resources;
 };
