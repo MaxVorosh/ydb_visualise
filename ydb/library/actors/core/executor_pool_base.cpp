@@ -12,7 +12,8 @@ namespace NActors {
 
     void DoActorInit(TActorSystem* sys, IActor* actor, const TActorId& self, const TActorId& owner) {
         with_lock(sys->VisualiseLogLock) {
-            std::cerr << "New " << self.ToString() << ' ' << actor->GetActivityType() << std::endl;
+            auto type_index = actor->GetActivityType();
+            std::cerr << "New " << self.ToString() << ' ' << GetActivityTypeName(type_index) << std::endl;
         }
         // TODO: Not all of actors going through DoActorInit for some reason
         actor->SelfActorId = self;
