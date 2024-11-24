@@ -13,6 +13,7 @@ public:
     void disable();
     void enable();
     void rename(std::string new_name);
+    void set_activity_type(std::string new_activity_type);
     bool is_visible();
     void set_visibility(bool new_val);
     std::string get_name();
@@ -26,6 +27,7 @@ protected:
     spSprite _body;
     spTextField _label;
     std::string name;
+    std::string activity_type;
     bool visible = false;
     bool visible_text = false;
 };

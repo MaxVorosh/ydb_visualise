@@ -38,11 +38,12 @@ ActorVisualise::ActorVisualise() {
     _resources.loadXML("res.xml");
 }
 
-void ActorVisualise::add_new_actor(std::vector<spActorModel>& group, std::string name, int cell_x, int cell_y, int group_number, int layer_number) {
+void ActorVisualise::add_new_actor(std::vector<spActorModel>& group, std::string name, std::string activity_type, int cell_x, int cell_y, int group_number, int layer_number) {
     int current_actors = group.size();
     group.push_back(new ActorModel);
     group.back()->init(this);
     group.back()->rename(name);
+    group.back()->set_activity_type(activity_type);
     group.back()->resize(cell_x / 5, cell_y / 5);
 
     int cell_number = (current_actors < 4) ? current_actors : current_actors + 1;
@@ -79,8 +80,8 @@ void ActorVisualise::init(std::string log_filename)
     std::vector<spActorModel> group;
     std::vector<std::vector<spActorModel>> layer;
 
-    for (auto actor_name: parser.getActors()) {
-        add_new_actor(group, actor_name, cell_x, cell_y, layer.size(), 0);
+    for (auto actor_info: parser.getActorsInfo()) {
+        add_new_actor(group, actor_info.name, actor_info.activity_type, cell_x, cell_y, layer.size(), 0);
         if (group.size() == group_size) {
             layer.push_back(group);
             group.clear();
@@ -100,7 +101,8 @@ void ActorVisualise::init(std::string log_filename)
 
         for (int i = 0; i < len; ++i) {
             std::string actor_name = "layer " + std::to_string(_actors.size() - 1) + ", group " + std::to_string(i);
-            add_new_actor(group, actor_name , cell_x, cell_y, layer.size(), _actors.size());
+            std::string activity_type = "Group Actor";
+            add_new_actor(group, actor_name, activity_type, cell_x, cell_y, layer.size(), _actors.size());
             if (group.size() == group_size) {
                 layer.push_back(group);
                 group.clear();

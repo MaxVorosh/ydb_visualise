@@ -51,7 +51,7 @@ private:
     spActorModel get_actor(std::string actor);
     std::pair<float, float> get_actor_coords(std::string actor);
     bool is_actor_valid(std::string actor);
-    void add_new_actor(std::vector<spActorModel>& group, std::string name, int cell_x, int cell_y, int group_number, int layer_number);
+    void add_new_actor(std::vector<spActorModel>& group, std::string name, std::string activity_type, int cell_x, int cell_y, int group_number, int layer_number);
     bool on_screen(std::string actor);
     void onEvent(Event* ev);
     void load_new_actors();

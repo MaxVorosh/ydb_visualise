@@ -49,7 +49,12 @@ void ActorModel::enable() {
 
 void ActorModel::rename(std::string new_name) {
     name = new_name;
-    _label->setText(name);
+    _label->setText(name + '\n' + activity_type);
+}
+
+void ActorModel::set_activity_type(std::string new_activity_type) {
+    activity_type = new_activity_type;
+    _label->setText(name + '\n' + activity_type);
 }
 
 void ActorModel::_update(const UpdateState& us)
