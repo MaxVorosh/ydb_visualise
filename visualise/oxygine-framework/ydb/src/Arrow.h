@@ -14,6 +14,8 @@ public:
     void enable();
     void disable();
 
+    spSprite _click_box;
+
 protected:
     void _init();
     void _update(const UpdateState& us);
@@ -28,9 +30,14 @@ public:
     void point(int x_from, int y_from, int x_to, int y_to);
     void enable();
     void disable();
+    void onClick(Event* ev);
+    void set_type(std::string);
+    void set_style(TextStyle style);
 private:
     spArrowPart _body;
     spArrowPart _left_part;
     spArrowPart _right_part;
+    spTextField _label;
+    bool visible_text = false;
 };
 

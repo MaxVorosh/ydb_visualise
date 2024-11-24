@@ -66,9 +66,7 @@ void ActorVisualise::init(std::string log_filename)
 {
     progress_bar = new FramedProgressBar;
     progress_bar->init(this);
-    _arrow = new Arrow;
-    _arrow->init(this);
-    _arrow->disable();
+
     parser.parse(log_filename);
     // std::cout << "Parsed. Find " << parser.getActors().size() << " actors!" << std::endl;
     //scene layer would have size of display
@@ -114,6 +112,14 @@ void ActorVisualise::init(std::string log_filename)
         }
         _actors.push_back(layer);
     }
+
+    _arrow = new Arrow;
+    _arrow->init(this);
+    _arrow->disable();
+    TextStyle style(_resources.getResFont("main"));
+    style.fontSize = 15;
+    style.color = Color(255, 255, 255);
+    _arrow->set_style(style);
 }
 
 bool ActorVisualise::is_actor_valid(std::string actor) {
@@ -213,6 +219,7 @@ void ActorVisualise::process_stage() {
         }
         compute_arrow(stage.main_actor, stage.other_actor);
         draw_arrow();
+        _arrow->set_type(stage.info);
     }
 }
 

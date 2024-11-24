@@ -6,6 +6,12 @@ void ArrowPart::_init()
 {
     _view->setPosition(_scene->getSize() / 2);
 
+    _click_box = new ColorRectSprite;
+    _click_box->setSize(22, 50);
+    _click_box->setColor(Color(0, 0, 0, 0));
+    _click_box->attachTo(_view);
+    _click_box->setPosition(-10, 0);
+
     _body = new ColorRectSprite;
     _body->setSize(2, 50);
     _body->setColor(Color(0, 0, 255));
@@ -14,10 +20,12 @@ void ArrowPart::_init()
 
 void ArrowPart::disable() {
     _body->setVisible(false);
+    _click_box->setVisible(false);
 }
 
 void ArrowPart::enable() {
     _body->setVisible(true);
+    _click_box->setVisible(true);
 }
 
 void ArrowPart::move(float x, float y) {
@@ -39,12 +47,19 @@ void ArrowPart::_update(const UpdateState& us)
 void Arrow::init(ActorVisualise* scene) {
     _body = new ArrowPart;
     _body->init(scene);
+    _body->_click_box->addEventListener(TouchEvent::CLICK, CLOSURE(this, &Arrow::onClick));
 
     _left_part = new ArrowPart;
     _left_part->init(scene);
+    _left_part->_click_box->addEventListener(TouchEvent::CLICK, CLOSURE(this, &Arrow::onClick));
 
     _right_part = new ArrowPart;
     _right_part->init(scene);
+    _right_part->_click_box->addEventListener(TouchEvent::CLICK, CLOSURE(this, &Arrow::onClick));
+
+    _label = new TextField;
+    _label->setSize(100, 10);
+    _label->attachTo(scene);
 }
 
 void Arrow::point(int from_x, int from_y, int to_x, int to_y) {
@@ -64,6 +79,8 @@ void Arrow::point(int from_x, int from_y, int to_x, int to_y) {
     _right_part->scaleY(std::max(sqrt(dx * dx + dy * dy) * 0.1, 50.0));
     _right_part->move(to_x, to_y);
     _right_part->rotate(angle - 3.14 * 5 / 6);
+
+    _label->setPosition((from_x + to_x) / 2, (from_y + to_y) / 2);
 }
 
 void Arrow::enable() {
@@ -76,4 +93,24 @@ void Arrow::disable() {
     _body->disable();
     _left_part->disable();
     _right_part->disable();
+    _label->setVisible(false);
+}
+
+void Arrow::set_type(std::string type) {
+    std::cout << "Set " << type << std::endl;
+    _label->setText(type);
+}
+
+void Arrow::set_style(TextStyle style) {
+    _label->setStyle(style);
+}
+
+void Arrow::onClick(Event* ev)
+{
+    TouchEvent* te = safeCast<TouchEvent*>(ev);
+    if (te->type == TouchEvent::CLICK)
+    {
+        visible_text = !visible_text;
+        _label->setVisible(visible_text);
+    }
 }
