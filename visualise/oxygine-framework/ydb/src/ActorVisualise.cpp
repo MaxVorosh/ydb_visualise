@@ -203,9 +203,7 @@ void ActorVisualise::process_stage() {
         }
     }
     else if (stage.type == StageType::Register) {
-        if (on_screen(stage.main_actor)) {
-            main_actor->activate();
-        }
+        main_actor->activate();
     }
     else if (stage.type == StageType::Send) {
         if (!is_actor_valid(stage.other_actor)) {
@@ -231,9 +229,7 @@ void ActorVisualise::undo_stage() {
         }
     }
     else if (stage.type == StageType::Register) {
-        if (on_screen(stage.main_actor)) {
-            main_actor->deactivate();
-        }
+        main_actor->deactivate();
     }
     else if (stage.type == StageType::Send) {}
 }
