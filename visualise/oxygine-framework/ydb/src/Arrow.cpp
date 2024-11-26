@@ -97,7 +97,6 @@ void Arrow::disable() {
 }
 
 void Arrow::set_type(std::string type) {
-    std::cout << "Set " << type << std::endl;
     _label->setText(type);
 }
 

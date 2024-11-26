@@ -296,13 +296,13 @@ void ActorVisualise::change_layer(int new_layer) {
         return;
     }
     remove_old_actors();
-    current_layer = new_layer;
     if (new_layer < current_layer) {
         current_group *= group_size;
     }
     else {
         current_group /= group_size;
     }
+    current_layer = new_layer;
     load_new_actors();
 }
 
