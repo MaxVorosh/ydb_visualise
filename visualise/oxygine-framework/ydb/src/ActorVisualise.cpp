@@ -64,6 +64,7 @@ void ActorVisualise::add_new_actor(std::vector<spActorModel>& group, std::string
 
 void ActorVisualise::init(std::string log_filename)
 {
+    init_label();
     progress_bar = new FramedProgressBar;
     progress_bar->init(this);
 
@@ -120,6 +121,18 @@ void ActorVisualise::init(std::string log_filename)
     style.fontSize = 15;
     style.color = Color(255, 255, 255);
     _arrow->set_style(style);
+}
+
+void ActorVisualise::init_label() {
+    _label = new TextField;
+    _label->setSize(100, 40);
+    _label->attachTo(this);
+    _label->setPosition(10, 10);
+    TextStyle style(_resources.getResFont("main"));
+    style.fontSize = 15;
+    style.color = Color(255, 255, 255);
+    _label->setStyle(style);
+    update_label();
 }
 
 bool ActorVisualise::is_actor_valid(std::string actor) {
@@ -291,6 +304,10 @@ void ActorVisualise::remove_old_actors() {
     }
 }
 
+void ActorVisualise::update_label() {
+    _label->setText("Layer: " + std::to_string(current_layer) + "\nGroup: " + std::to_string(current_group));
+}
+
 void ActorVisualise::change_layer(int new_layer) {
     if (new_layer < 0 || new_layer >= _actors.size()) {
         return;
@@ -304,6 +321,7 @@ void ActorVisualise::change_layer(int new_layer) {
     }
     current_layer = new_layer;
     load_new_actors();
+    update_label();
 }
 
 void ActorVisualise::change_group(int new_group) {
@@ -314,6 +332,7 @@ void ActorVisualise::change_group(int new_group) {
     remove_old_actors();
     current_group = new_group;
     load_new_actors();
+    update_label();
 }
 
 void ActorVisualise::onEvent(Event* ev)

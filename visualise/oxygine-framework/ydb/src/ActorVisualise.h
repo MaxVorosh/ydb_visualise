@@ -60,6 +60,8 @@ private:
     void change_group(int new_group);
     void compute_arrow(std::string from_actor, std::string to_actor);
     void draw_arrow();
+    void init_label();
+    void update_label();
 
     float time = 0;
     const float time_limit = 300;
@@ -76,6 +78,7 @@ private:
     bool on_pause = false;
     bool on_reverse = false;
     spFramedProgressBar progress_bar;
+    spTextField _label;
 
     Resources _resources;
 };
