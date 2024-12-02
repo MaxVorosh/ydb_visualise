@@ -9,23 +9,8 @@ using namespace oxygine;
 struct ActorInfo {
     int pos;
     std::pair<float, float> coords;
-    int group;
-    int layer;
     ActorInfo();
-    ActorInfo(int _pos, std::pair<float, float> _coords, int _group, int _layer);
-};
-
-struct ArrowLine {
-    int from_x;
-    int from_y;
-    int to_x;
-    int to_y;
-    ArrowLine();
-    ArrowLine(int f_x, int f_y, int t_x, int t_y);
-};
-
-struct PairHash {
-    std::size_t operator()(const std::pair<int, int> &p) const noexcept;
+    ActorInfo(int _pos, std::pair<float, float> _coords);
 };
 
 DECLARE_SMART(FramedProgressBar, spFramedProgressBar);
@@ -51,17 +36,10 @@ private:
     spActorModel get_actor(std::string actor);
     std::pair<float, float> get_actor_coords(std::string actor);
     bool is_actor_valid(std::string actor);
-    void add_new_actor(std::vector<spActorModel>& group, std::string name, std::string activity_type, int cell_x, int cell_y, int group_number, int layer_number);
-    bool on_screen(std::string actor);
+    void add_new_actor(std::string name, std::string activity_type, int x, int y, int size);
     void onEvent(Event* ev);
-    void load_new_actors();
-    void remove_old_actors();
-    void change_layer(int new_layer);
-    void change_group(int new_group);
-    void compute_arrow(std::string from_actor, std::string to_actor);
-    void draw_arrow();
-    void init_label();
-    void update_label();
+    void draw_arrow(std::string from_actor, std::string to_actor);
+    void move(float dx, float dy);
 
     float time = 0;
     const float time_limit = 300;
@@ -69,16 +47,16 @@ private:
     int current_index = 0;
     std::unordered_map<std::string, ActorInfo> actors_info;
 
-    std::vector<std::vector<std::vector<spActorModel>>> _actors;
+    std::vector<spActorModel> _actors;
     spArrow _arrow;
-    std::unordered_map<std::pair<int, int>, ArrowLine, PairHash> arrow_lines;
 
-    int current_group;
-    int current_layer;
     bool on_pause = false;
     bool on_reverse = false;
     spFramedProgressBar progress_bar;
-    spTextField _label;
+    const int actor_size = 50;
+    std::string point_actor_from;
+    std::string point_actor_to;
+    bool is_pointed;
 
     Resources _resources;
 };
