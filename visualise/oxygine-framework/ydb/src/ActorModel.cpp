@@ -24,7 +24,7 @@ void ActorModel::move(int x, int y) {
     this->y = y;
     _view->setPosition(x * scale, y * scale);
     auto body_size = _body->getSize();
-    _label->setPosition(0, body_size.y * scale);
+    _label->setPosition(0, body_size.y);
     // std::cout << x << ' ' << y << ' ' << body_size.x << ' ' << body_size.y << std::endl;
 }
 

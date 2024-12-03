@@ -46,5 +46,7 @@ private:
     spTextField _label;
     bool visible_text = false;
     float scale = 1.0;
+    float label_x;
+    float label_y;
 };
 

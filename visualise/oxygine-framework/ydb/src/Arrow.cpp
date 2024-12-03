@@ -89,7 +89,9 @@ void Arrow::point(int from_x, int from_y, int to_x, int to_y) {
     _right_part->move(to_x, to_y);
     _right_part->rotate(angle - 3.14 * 5 / 6);
 
-    _label->setPosition((from_x + to_x) / 2, (from_y + to_y) / 2);
+    label_x = (from_x + to_x) / 2;
+    label_y = (from_y + to_y) / 2;
+    _label->setPosition(label_x * scale, label_y * scale);
 }
 
 void Arrow::enable() {
@@ -114,9 +116,11 @@ void Arrow::set_style(TextStyle style) {
 }
 
 void Arrow::set_scale(float scale) {
+    this->scale = scale;
     _body->set_scale(scale);
     _left_part->set_scale(scale);
     _right_part->set_scale(scale);
+    _label->setPosition(label_x * scale, label_y * scale);
 }
 
 void Arrow::onClick(Event* ev)
