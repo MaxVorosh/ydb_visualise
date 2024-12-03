@@ -40,6 +40,7 @@ private:
     void onEvent(Event* ev);
     void draw_arrow(std::string from_actor, std::string to_actor);
     void move(float dx, float dy);
+    void update_scale();
 
     float time = 0;
     const float time_limit = 300;
@@ -57,6 +58,7 @@ private:
     std::string point_actor_from;
     std::string point_actor_to;
     bool is_pointed;
+    float scale = 1.0;
 
     Resources _resources;
 };

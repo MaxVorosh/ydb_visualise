@@ -197,11 +197,30 @@ void ActorVisualise::move(float dx, float dy) {
     }
 }
 
+void ActorVisualise::update_scale() {
+    for (auto actor: _actors) {
+        actor->set_scale(scale);
+    }
+    _arrow->set_scale(scale);
+}
+
 void ActorVisualise::onEvent(Event* ev)
 {
     SDL_Event *event = (SDL_Event*)ev->userData;
     float v_x = 10;
     float v_y = 10;
+    float v_scale = 0.9;
+
+    if (event->type == SDL_MOUSEWHEEL) {
+        if (event->wheel.y == 1) {
+            scale /= v_scale;
+        }
+        else {
+            scale *= v_scale;
+        }
+        update_scale();
+        return;
+    }
 
     if (event->type != SDL_KEYDOWN)
         return;

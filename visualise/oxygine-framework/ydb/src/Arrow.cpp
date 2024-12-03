@@ -29,7 +29,9 @@ void ArrowPart::enable() {
 }
 
 void ArrowPart::move(float x, float y) {
-    _view->setPosition(x, y);
+    this->x = x;
+    this->y = y;
+    _view->setPosition(x * scale, y * scale);
 }
 
 void ArrowPart::rotate(float angle) {
@@ -37,7 +39,14 @@ void ArrowPart::rotate(float angle) {
 }
 
 void ArrowPart::scaleY(float new_x) {
-    _view->setScaleY(new_x / sqrt(2504));
+    size_x = new_x;
+    _view->setScaleY(new_x / sqrt(2504) * scale);
+}
+
+void ArrowPart::set_scale(float scale) {
+    this->scale = scale;
+    scaleY(size_x);
+    move(x, y);
 }
 
 void ArrowPart::_update(const UpdateState& us)
@@ -102,6 +111,12 @@ void Arrow::set_type(std::string type) {
 
 void Arrow::set_style(TextStyle style) {
     _label->setStyle(style);
+}
+
+void Arrow::set_scale(float scale) {
+    _body->set_scale(scale);
+    _left_part->set_scale(scale);
+    _right_part->set_scale(scale);
 }
 
 void Arrow::onClick(Event* ev)
