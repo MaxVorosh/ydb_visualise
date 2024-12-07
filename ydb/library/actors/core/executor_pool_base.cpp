@@ -5,6 +5,7 @@
 #include "executor_thread.h"
 #include "mailbox.h"
 #include "probes.h"
+#include <cxxabi.h>
 #include <ydb/library/actors/util/datetime.h>
 
 namespace NActors {
@@ -13,7 +14,7 @@ namespace NActors {
     void DoActorInit(TActorSystem* sys, IActor* actor, const TActorId& self, const TActorId& owner) {
         with_lock(sys->VisualiseLogLock) {
             auto type_index = actor->GetActivityType();
-            std::cerr << "New " << self.ToString() << ' ' << GetActivityTypeName(type_index) << std::endl;
+            std::cerr << "New " << self.ToString() << ' ' << GetActivityTypeName(type_index) << ' ' << abi::__cxa_demangle(typeid(*actor).name(), nullptr, nullptr, nullptr) << std::endl;
         }
         // TODO: Not all of actors going through DoActorInit for some reason
         actor->SelfActorId = self;

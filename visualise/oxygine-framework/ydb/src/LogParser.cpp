@@ -7,11 +7,13 @@
 LogActorInfo::LogActorInfo() {
     name = "";
     activity_type = "";
+    type = "";
 }
 
-LogActorInfo::LogActorInfo(std::string name, std::string activity_type) {
+LogActorInfo::LogActorInfo(std::string name, std::string activity_type, std::string type) {
     this->name = name;
     this->activity_type = activity_type;
+    this->type = type;
 }
 
 StageInfo::StageInfo() {
@@ -46,13 +48,13 @@ void LogParser::parse(std::string filename) {
             if (actors.find(actor_from) == actors.end()) {
                 actors.insert(actor_from);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor_from, activity_type));
+                actor_info.push_back(LogActorInfo(actor_from, activity_type, activity_type));
                 stages.push_back(StageInfo(StageType::New, actor_from, "", activity_type));
             }
             if (actors.find(actor_to) == actors.end()) {
                 actors.insert(actor_to);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor_to, activity_type));
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
                 stages.push_back(StageInfo(StageType::New, actor_to, "", activity_type));
             }
             stages.push_back(StageInfo(StageType::Send, actor_from, actor_to, send_type));
@@ -60,14 +62,20 @@ void LogParser::parse(std::string filename) {
         else if (type == "Register") {
             std::string actor;
             fin >> actor;
+            if (actors.find(actor) == actors.end()) {
+                actors.insert(actor);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor, "", activity_type));
+            }
             stages.push_back(StageInfo(StageType::Register, actor, "", ""));
         }
         else if (type == "New") {
-            std::string actor, activity_type;
-            fin >> actor >> activity_type;
+            std::string actor, activity_type, type;
+            fin >> actor >> activity_type >> type;
             actors.insert(actor);
-            actor_info.push_back(LogActorInfo(actor, activity_type));
-            stages.push_back(StageInfo(StageType::New, actor, "", activity_type));
+            actor_info.push_back(LogActorInfo(actor, activity_type, type));
+            stages.push_back(StageInfo(StageType::New, actor, "", ""));
         }
     }
 }

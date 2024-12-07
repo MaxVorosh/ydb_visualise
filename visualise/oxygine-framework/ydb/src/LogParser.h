@@ -9,9 +9,10 @@ enum class StageType {New, Register, Send};
 struct LogActorInfo {
     std::string name;
     std::string activity_type;
+    std::string type;
 
     LogActorInfo();
-    LogActorInfo(std::string name, std::string activity_type);
+    LogActorInfo(std::string name, std::string activity_type, std::string type);
 };
 
 struct StageInfo {

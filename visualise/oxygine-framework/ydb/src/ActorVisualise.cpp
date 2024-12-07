@@ -21,12 +21,13 @@ ActorVisualise::ActorVisualise() {
     _resources.loadXML("res.xml");
 }
 
-void ActorVisualise::add_new_actor(std::string name, std::string activity_type, int x, int y, int size) {
+void ActorVisualise::add_new_actor(std::string name, std::string activity_type, std::string type, int x, int y, int size) {
     int current_actors = _actors.size();
     _actors.push_back(new ActorModel);
     _actors.back()->init(this);
     _actors.back()->rename(name);
     _actors.back()->set_activity_type(activity_type);
+    _actors.back()->set_type(type);
     _actors.back()->resize(size, size);
     _actors.back()->move(x, y);
 
@@ -58,7 +59,7 @@ void ActorVisualise::init(std::string log_filename)
     for (auto actor_info: parser.getActorsInfo()) {
         int x = min_x + stride * column;
         int y = min_y + stride * row;
-        add_new_actor(actor_info.name, actor_info.activity_type, x, y, actor_size);
+        add_new_actor(actor_info.name, actor_info.activity_type, actor_info.type, x, y, actor_size);
         column++;
         if (column == side) {
             column = 0;

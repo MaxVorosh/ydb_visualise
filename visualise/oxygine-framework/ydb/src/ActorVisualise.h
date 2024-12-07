@@ -36,7 +36,7 @@ private:
     spActorModel get_actor(std::string actor);
     std::pair<float, float> get_actor_coords(std::string actor);
     bool is_actor_valid(std::string actor);
-    void add_new_actor(std::string name, std::string activity_type, int x, int y, int size);
+    void add_new_actor(std::string name, std::string activity_type, std::string type, int x, int y, int size);
     void onEvent(Event* ev);
     void draw_arrow(std::string from_actor, std::string to_actor);
     void move(float dx, float dy);
