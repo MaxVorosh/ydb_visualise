@@ -98,6 +98,8 @@ SRCS(
     scheduler_cookie.h
     scheduler_queue.h
     servicemap.h
+    visualise/oxygine-framework/ydb/src/LogParser.cpp
+    visualise/oxygine-framework/ydb/src/LogParser.h
 )
 
 GENERATE_ENUM_SERIALIZATION(defs.h)

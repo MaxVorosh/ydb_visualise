@@ -17,6 +17,8 @@
 #include <util/datetime/base.h>
 #include <util/system/mutex.h>
 
+#include <visualise/oxygine-framework/ydb/src/LogParser.h>
+
 namespace NActors {
     class IActor;
     class TActorSystem;
@@ -136,6 +138,7 @@ namespace NActors {
     public:
         const ui32 NodeId;
         TMutex VisualiseLogLock; // Temporary solution
+        std::unique_ptr<LogWriter> VisualiseLogger;
 
     private:
         THolder<TCpuManager> CpuManager;

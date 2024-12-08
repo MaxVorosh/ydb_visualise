@@ -14,7 +14,9 @@ namespace NActors {
     void DoActorInit(TActorSystem* sys, IActor* actor, const TActorId& self, const TActorId& owner) {
         with_lock(sys->VisualiseLogLock) {
             auto type_index = actor->GetActivityType();
-            std::cerr << "New " << self.ToString() << ' ' << GetActivityTypeName(type_index) << ' ' << abi::__cxa_demangle(typeid(*actor).name(), nullptr, nullptr, nullptr) << std::endl;
+            std::string activity_type = GetActivityTypeName(type_index).data();
+            std::string actor_type = abi::__cxa_demangle(typeid(*actor).name(), nullptr, nullptr, nullptr);
+            sys->VisualiseLogger->add_operation(StageInfo(StageType::New, self.ToString(), actor_type, activity_type));
         }
         // TODO: Not all of actors going through DoActorInit for some reason
         actor->SelfActorId = self;
