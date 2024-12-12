@@ -26,7 +26,7 @@ public:
     void init(std::string log_filename);
 
 private:
-    LogParser parser;
+    LogParser parser = LogParser(LogType::Text);
     friend class ActorModel;
     friend class Arrow;
     void doUpdate(const UpdateState& us);

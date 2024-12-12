@@ -31,7 +31,8 @@ StageInfo::StageInfo(StageType type, std::string actor_from, std::string actor_t
     this->info = info;
 }
 
-LogParser::LogParser() {
+LogParser::LogParser(LogType type) {
+    this->type = type;
 }
 
 void LogParser::read_types(std::ifstream& fin, std::vector<std::string>& data) {
@@ -59,6 +60,61 @@ std::string LogParser::read_actor_id(std::ifstream& fin) {
 }
 
 void LogParser::parse(std::string filename) {
+    if (type == LogType::Binary) {
+        parse_binary(filename);
+        return;
+    }
+    parse_text(filename);
+}
+
+void LogParser::parse_text(std::string filename) {
+    stages.clear();
+    actors.clear();
+    std::ifstream fin(filename);
+    if (!fin.is_open()) {
+        return;
+    }
+    std::string type;
+    while (fin >> type) {
+        if (type == "Send") {
+            std::string actor_from, actor_to, send_type;
+            fin >> actor_from >> actor_to >> send_type;
+            if (actors.find(actor_from) == actors.end()) {
+                actors.insert(actor_from);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor_from, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor_from, "", ""));
+            }
+            if (actors.find(actor_to) == actors.end()) {
+                actors.insert(actor_to);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor_to, "", ""));
+            }
+            stages.push_back(StageInfo(StageType::Send, actor_from, actor_to, send_type));
+        }
+        else if (type == "Register") {
+            std::string actor;
+            fin >> actor;
+            if (actors.find(actor) == actors.end()) {
+                actors.insert(actor);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor, "", ""));
+            }
+            stages.push_back(StageInfo(StageType::Register, actor, "", ""));
+        }
+        else if (type == "New") {
+            std::string actor, activity_type, type;
+            fin >> actor >> activity_type >> type;
+            actors.insert(actor);
+            actor_info.push_back(LogActorInfo(actor, activity_type, type));
+            stages.push_back(StageInfo(StageType::New, actor, "", ""));
+        }
+    }
+}
+
+void LogParser::parse_binary(std::string filename) {
     stages.clear();
     actors.clear();
     std::ifstream fin(filename, std::ios::binary);
@@ -133,9 +189,10 @@ std::vector<LogActorInfo>& LogParser::getActorsInfo() {
     return actor_info;
 }
 
-LogWriter::LogWriter(std::string filename, int max_operations) {
+LogWriter::LogWriter(std::string filename, int max_operations, LogType type) {
     this->filename = filename;
     this->max_operations = max_operations;
+    this->type = type;
 }
 
 LogWriter::~LogWriter() {
@@ -146,6 +203,18 @@ void LogWriter::add_operation(StageInfo op) {
     if (max_operations <= static_cast<int>(operations.size())) {
         return;
     }
+    if (type == LogType::Binary) {
+        add_operation_binary(op);
+        return;
+    }
+    add_operation_text(op);
+}
+
+void LogWriter::add_operation_text(StageInfo op) {
+    operations.push_back(op);
+}
+
+void LogWriter::add_operation_binary(StageInfo op) {
     operations.push_back(op);
     if (op.type == StageType::New) {
         // Assuming other_actor contains actor_type, info contains activity_type
@@ -197,6 +266,29 @@ unsigned char LogWriter::type_to_int(StageType type) {
 }
 
 void LogWriter::write_file() {
+    if (type == LogType::Binary) {
+        write_file_binary();
+        return;
+    }
+    write_file_text();
+}
+
+void LogWriter::write_file_text() {
+    std::ofstream fout(filename);
+    for (auto op: operations) {
+        if (op.type == StageType::Send) {
+            fout << "Send " << op.main_actor << ' ' << op.other_actor << ' ' << op.info << std::endl;
+        }
+        else if (op.type == StageType::Register) {
+            fout << "Register " << op.main_actor << std::endl;
+        }
+        else if (op.type == StageType::New) {
+            fout << "New " << op.main_actor << ' ' << op.other_actor << ' ' << op.info << std::endl;
+        }
+    }
+}
+
+void LogWriter::write_file_binary() {
     std::ofstream fout(filename, std::ios::binary);
     write_map(fout, actor_types);
     write_map(fout, activity_types);

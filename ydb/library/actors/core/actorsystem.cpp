@@ -85,7 +85,7 @@ namespace NActors {
         , StopExecuted(false)
         , CleanupExecuted(false)
     {
-        VisualiseLogger = std::unique_ptr<LogWriter>(new LogWriter{"visualise_log", 79});
+        VisualiseLogger = std::unique_ptr<LogWriter>(new LogWriter{"log.txt", 79, LogType::Text});
         ServiceMap.Reset(new TServiceMap());
     }
 
