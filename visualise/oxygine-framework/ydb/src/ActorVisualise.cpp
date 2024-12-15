@@ -120,12 +120,14 @@ void ActorVisualise::process_stage() {
         if (!differ) {
             _arrow = _helper_arrow;
             differ = true;
+            lock_stage = current_index;
         }
     }
     else if (differ) {
         differ = false;
         _arrow = _main_arrow;
         _helper_arrow->disable();
+        lock_stage = -1;
     }
     _arrow->disable();
     is_pointed = false;
@@ -154,6 +156,12 @@ void ActorVisualise::process_stage() {
 }
 
 void ActorVisualise::undo_stage() {
+    if (lock_stage == current_index) {
+        _arrow = _main_arrow;
+        _helper_arrow->disable();
+        lock_stage = -1;
+        _main_arrow->switch_lock();
+    }
     _arrow->disable();
     is_pointed = false;
     StageInfo stage = parser.getStages()[current_index];

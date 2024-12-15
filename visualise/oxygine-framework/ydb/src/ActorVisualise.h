@@ -54,6 +54,7 @@ private:
     spArrow _helper_arrow;
     spMainArrow _main_arrow;
     bool differ = false;
+    int lock_stage = -1;
 
     bool on_pause = false;
     bool on_reverse = false;

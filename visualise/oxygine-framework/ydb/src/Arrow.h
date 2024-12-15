@@ -57,6 +57,7 @@ class MainArrow: public Arrow {
 public:
     void onClick(Event* ev) override;
     bool is_locked();
+    void switch_lock();
 protected:
     bool locked = false;
 };

@@ -140,18 +140,22 @@ void Arrow::set_color(Color c) {
 
 void Arrow::onClick(Event* ev) {}
 
+void MainArrow::switch_lock() {
+    locked = !locked;
+    if (locked) {
+        set_color(Color(42, 234, 231));
+    }
+    else {
+        set_color(Color(0, 0, 255));
+    }
+}
+
 void MainArrow::onClick(Event* ev)
 {
     TouchEvent* te = safeCast<TouchEvent*>(ev);
     if (te->type == TouchEvent::CLICK)
     {
-        locked = !locked;
-        if (locked) {
-            set_color(Color(42, 234, 231));
-        }
-        else {
-            set_color(Color(0, 0, 255));
-        }
+        switch_lock();
     }
 }
 
