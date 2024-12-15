@@ -16,6 +16,7 @@ struct ActorInfo {
 DECLARE_SMART(FramedProgressBar, spFramedProgressBar);
 DECLARE_SMART(ArrowPart, spArrowPart);
 DECLARE_SMART(Arrow, spArrow);
+DECLARE_SMART(MainArrow, spMainArrow);
 DECLARE_SMART(ActorModel, spActorModel);
 DECLARE_SMART(ActorVisualise, spActorVisualise);
 class ActorVisualise: public Actor
@@ -50,6 +51,9 @@ private:
 
     std::vector<spActorModel> _actors;
     spArrow _arrow;
+    spArrow _helper_arrow;
+    spMainArrow _main_arrow;
+    bool differ = false;
 
     bool on_pause = false;
     bool on_reverse = false;
@@ -60,5 +64,6 @@ private:
     bool is_pointed;
     float scale = 1.0;
 
+    TextStyle style;
     Resources _resources;
 };

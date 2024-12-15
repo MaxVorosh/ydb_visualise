@@ -49,6 +49,10 @@ void ArrowPart::set_scale(float scale) {
     move(x, y);
 }
 
+void ArrowPart::set_color(Color c) {
+    _body->setColor(c);
+}
+
 void ArrowPart::_update(const UpdateState& us)
 {
 }
@@ -69,6 +73,10 @@ void Arrow::init(ActorVisualise* scene) {
     _label = new TextField;
     _label->setSize(100, 10);
     _label->attachTo(scene);
+
+    _body->disable();
+    _left_part->disable();
+    _right_part->disable();
 }
 
 void Arrow::point(int from_x, int from_y, int to_x, int to_y) {
@@ -98,6 +106,7 @@ void Arrow::enable() {
     _body->enable();
     _left_part->enable();
     _right_part->enable();
+    _label->setVisible(true);
 }
 
 void Arrow::disable() {
@@ -123,12 +132,29 @@ void Arrow::set_scale(float scale) {
     _label->setPosition(label_x * scale, label_y * scale);
 }
 
-void Arrow::onClick(Event* ev)
+void Arrow::set_color(Color c) {
+    _body->set_color(c);
+    _right_part->set_color(c);
+    _left_part->set_color(c);
+}
+
+void Arrow::onClick(Event* ev) {}
+
+void MainArrow::onClick(Event* ev)
 {
     TouchEvent* te = safeCast<TouchEvent*>(ev);
     if (te->type == TouchEvent::CLICK)
     {
-        visible_text = !visible_text;
-        _label->setVisible(visible_text);
+        locked = !locked;
+        if (locked) {
+            set_color(Color(42, 234, 231));
+        }
+        else {
+            set_color(Color(0, 0, 255));
+        }
     }
+}
+
+bool MainArrow::is_locked() {
+    return locked;
 }

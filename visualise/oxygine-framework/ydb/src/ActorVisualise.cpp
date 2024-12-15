@@ -67,13 +67,22 @@ void ActorVisualise::init(std::string log_filename)
         }
     }
 
-    _arrow = new Arrow;
-    _arrow->init(this);
-    _arrow->disable();
-    TextStyle style(_resources.getResFont("main"));
+    style = TextStyle(_resources.getResFont("main"));
     style.fontSize = 15;
     style.color = Color(255, 255, 255);
-    _arrow->set_style(style);
+
+    _main_arrow = new MainArrow;
+    _main_arrow->init(this);
+    _main_arrow->set_style(style);
+    _main_arrow->disable();
+
+    _helper_arrow = new Arrow;
+    _helper_arrow->init(this);
+    _helper_arrow->set_style(style);
+    _helper_arrow->disable();
+
+    _arrow = _main_arrow;
+
     progress_bar = new FramedProgressBar;
     progress_bar->init(this);
 }
@@ -107,6 +116,17 @@ void ActorVisualise::draw_arrow(std::string from_actor, std::string to_actor) {
 }
 
 void ActorVisualise::process_stage() {
+    if (_main_arrow->is_locked()) {
+        if (!differ) {
+            _arrow = _helper_arrow;
+            differ = true;
+        }
+    }
+    else if (differ) {
+        differ = false;
+        _arrow = _main_arrow;
+        _helper_arrow->disable();
+    }
     _arrow->disable();
     is_pointed = false;
     StageInfo stage = parser.getStages()[current_index];
