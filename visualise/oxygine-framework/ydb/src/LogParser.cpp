@@ -111,6 +111,42 @@ void LogParser::parse_text(std::string filename) {
             actor_info.push_back(LogActorInfo(actor, activity_type, type));
             stages.push_back(StageInfo(StageType::New, actor, "", ""));
         }
+        else if (type == "StartProcess") {
+            // First is receiver
+            std::string actor, actor_to;
+            fin >> actor >> actor_to;
+            if (actors.find(actor) == actors.end()) {
+                actors.insert(actor);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor, "", ""));
+            }
+            if (actors.find(actor_to) == actors.end()) {
+                actors.insert(actor_to);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor, "", ""));
+            }
+            stages.push_back(StageInfo(StageType::Register, actor, "", ""));
+        }
+        else if (type == "EndProcess") {
+            // First is receiver
+            std::string actor, actor_to;
+            fin >> actor >> actor_to;
+            if (actors.find(actor) == actors.end()) {
+                actors.insert(actor);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor, "", ""));
+            }
+            if (actors.find(actor_to) == actors.end()) {
+                actors.insert(actor_to);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor, "", ""));
+            }
+            stages.push_back(StageInfo(StageType::Register, actor, "", ""));
+        }
     }
 }
 
@@ -173,6 +209,30 @@ void LogParser::parse_binary(std::string filename) {
             actors.insert(actor);
             actor_info.push_back(LogActorInfo(actor, activity_type, actor_type));
             stages.push_back(StageInfo(StageType::New, actor, "", ""));
+        }
+        else if (type == "StartProcess") {
+            // First is receiver
+            std::string actor_to;
+            actor_to = read_actor_id(fin);
+            if (actors.find(actor_to) == actors.end()) {
+                actors.insert(actor_to);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor_to, "", ""));
+            }
+            stages.push_back(StageInfo(StageType::StartProcess, actor, actor_to, ""));
+        }
+        else if (type == "EndProcess") {
+            // First is receiver
+            std::string actor_to;
+            actor_to = read_actor_id(fin);
+            if (actors.find(actor_to) == actors.end()) {
+                actors.insert(actor_to);
+                std::string activity_type = "Unknown";
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
+                stages.push_back(StageInfo(StageType::New, actor_to, "", ""));
+            }
+            stages.push_back(StageInfo(StageType::EndProcess, actor, actor_to, ""));
         }
     }
 }
@@ -262,7 +322,13 @@ unsigned char LogWriter::type_to_int(StageType type) {
     if (type == StageType::Send) {
         return 2;
     }
-    return 3;
+    if (type == StageType::StartProcess) {
+        return 3;
+    }
+    if (type == StageType::EndProcess) {
+        return 4;
+    }
+    return 5;
 }
 
 void LogWriter::write_file() {
@@ -284,6 +350,14 @@ void LogWriter::write_file_text() {
         }
         else if (op.type == StageType::New) {
             fout << "New " << op.main_actor << ' ' << op.other_actor << ' ' << op.info << std::endl;
+        }
+        else if (op.type == StageType::StartProcess) {
+            // First is receiver
+            fout << "StartProcess " << op.main_actor << ' ' << op.other_actor << std::endl;
+        }
+        else if (op.type == StageType::EndProcess) {
+            // First is receiver
+            fout << "EndProcess " << op.main_actor << ' ' << op.other_actor << std::endl;
         }
     }
 }
@@ -323,6 +397,16 @@ void LogWriter::write_file_binary() {
             fout.write(reinterpret_cast<char*>(&other_hint), sizeof(other_hint));
             unsigned char send_type = send_types[op.info];
             fout.write(reinterpret_cast<char*>(&send_type), sizeof(send_type));
+        }
+        if (op.type == StageType::StartProcess || op.type == StageType::EndProcess) {
+            // First is receiver
+            LogWriter::hash_values other_actor_hash = parse_actor_id(op.other_actor);
+            std::uint32_t other_node_id = other_actor_hash.first.first;
+            std::uint64_t other_local_id = other_actor_hash.first.second;
+            std::uint32_t other_hint = other_actor_hash.second;
+            fout.write(reinterpret_cast<char*>(&other_node_id), sizeof(other_node_id));
+            fout.write(reinterpret_cast<char*>(&other_local_id), sizeof(other_local_id));
+            fout.write(reinterpret_cast<char*>(&other_hint), sizeof(other_hint));
         }
     }
     fout.close();
