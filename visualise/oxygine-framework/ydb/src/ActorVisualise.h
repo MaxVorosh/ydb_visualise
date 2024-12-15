@@ -3,6 +3,7 @@
 #include "LogParser.h"
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 using namespace oxygine;
 
@@ -56,12 +57,15 @@ private:
     bool differ = false;
     int lock_stage = -1;
 
+    std::unordered_map<std::string, std::unordered_multiset<std::string>> processing_operations;
+
     bool on_pause = false;
     bool on_reverse = false;
     spFramedProgressBar progress_bar;
     const int actor_size = 50;
     std::string point_actor_from;
     std::string point_actor_to;
+    std::string main_point_actor_from;
     bool is_pointed;
     float scale = 1.0;
 

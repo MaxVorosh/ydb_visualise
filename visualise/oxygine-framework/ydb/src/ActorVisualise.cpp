@@ -38,6 +38,7 @@ void ActorVisualise::add_new_actor(std::string name, std::string activity_type, 
 
     _actors.back()->disable();
     actors_info[name] = ActorInfo(current_actors, {x + size / 2, y + size / 2});
+    std::cout << name << std::endl;
 }
 
 void ActorVisualise::init(std::string log_filename)
@@ -121,6 +122,7 @@ void ActorVisualise::process_stage() {
             _arrow = _helper_arrow;
             differ = true;
             lock_stage = current_index;
+            main_point_actor_from = point_actor_from;
         }
     }
     else if (differ) {
@@ -152,6 +154,30 @@ void ActorVisualise::process_stage() {
         is_pointed = true;
         point_actor_from = stage.main_actor;
         point_actor_to = stage.other_actor;
+        if (_main_arrow->is_locked() && processing_operations[stage.main_actor].find(main_point_actor_from) != processing_operations[stage.main_actor].end()) {
+            _arrow->set_color(Color(240, 230, 140));
+        }
+        else {
+            _arrow->set_color(Color(0, 0, 255));
+        }
+    }
+    else if (stage.type == StageType::StartProcess) {
+        if (!is_actor_valid(stage.other_actor)) {
+            return;
+        }
+        if (processing_operations.find(stage.main_actor) == processing_operations.end()) {
+            processing_operations[stage.main_actor] = {};
+        }
+        processing_operations[stage.main_actor].insert(stage.other_actor);
+    }
+    else if (stage.type == StageType::EndProcess) {
+        if (!is_actor_valid(stage.other_actor)) {
+            return;
+        }
+        if (processing_operations.find(stage.main_actor) == processing_operations.end()) {
+            return;
+        }
+        processing_operations[stage.main_actor].erase(stage.other_actor);
     }
 }
 
@@ -177,6 +203,24 @@ void ActorVisualise::undo_stage() {
         main_actor->deactivate();
     }
     else if (stage.type == StageType::Send) {}
+    else if (stage.type == StageType::EndProcess) {
+        if (!is_actor_valid(stage.other_actor)) {
+            return;
+        }
+        if (processing_operations.find(stage.main_actor) != processing_operations.end()) {
+            processing_operations[stage.main_actor] = {};
+        }
+        processing_operations[stage.main_actor].insert(stage.other_actor);
+    }
+    else if (stage.type == StageType::StartProcess) {
+        if (!is_actor_valid(stage.other_actor)) {
+            return;
+        }
+        if (processing_operations.find(stage.main_actor) != processing_operations.end()) {
+            return;
+        }
+        processing_operations[stage.main_actor].erase(stage.other_actor);
+    }
 }
 
 void ActorVisualise::doUpdate(const UpdateState& us)

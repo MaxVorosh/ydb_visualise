@@ -127,7 +127,7 @@ void LogParser::parse_text(std::string filename) {
                 actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
                 stages.push_back(StageInfo(StageType::New, actor, "", ""));
             }
-            stages.push_back(StageInfo(StageType::Register, actor, "", ""));
+            stages.push_back(StageInfo(StageType::StartProcess, actor, actor_to, ""));
         }
         else if (type == "EndProcess") {
             // First is receiver
@@ -145,7 +145,7 @@ void LogParser::parse_text(std::string filename) {
                 actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
                 stages.push_back(StageInfo(StageType::New, actor, "", ""));
             }
-            stages.push_back(StageInfo(StageType::Register, actor, "", ""));
+            stages.push_back(StageInfo(StageType::EndProcess, actor, actor_to, ""));
         }
     }
 }
