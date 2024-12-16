@@ -43,6 +43,7 @@ private:
     void draw_arrow(std::string from_actor, std::string to_actor);
     void move(float dx, float dy);
     void update_scale();
+    bool should_color(std::string main_actor, std::string locked_actor);
 
     float time = 0;
     const float time_limit = 300;

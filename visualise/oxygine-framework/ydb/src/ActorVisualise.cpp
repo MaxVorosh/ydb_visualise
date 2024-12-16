@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
+#include <queue>
 
 ActorInfo::ActorInfo() {
 }
@@ -116,6 +117,24 @@ void ActorVisualise::draw_arrow(std::string from_actor, std::string to_actor) {
     _arrow->point(from_coords.first, from_coords.second, to_coords.first, to_coords.second);
 }
 
+bool ActorVisualise::should_color(std::string main_actor, std::string locked_actor) {
+    std::queue<std::string> actors_queue;
+    for (auto actor: processing_operations[main_actor]) {
+        actors_queue.push(actor);
+    }
+    while (!actors_queue.empty()) {
+        std::string actor = actors_queue.front();
+        actors_queue.pop();
+        if (actor == locked_actor) {
+            return true;
+        }
+        for (auto next_actor: processing_operations[actor]) {
+            actors_queue.push(next_actor);
+        }
+    }
+    return false;
+}
+
 void ActorVisualise::process_stage() {
     if (_main_arrow->is_locked()) {
         if (!differ) {
@@ -154,7 +173,7 @@ void ActorVisualise::process_stage() {
         is_pointed = true;
         point_actor_from = stage.main_actor;
         point_actor_to = stage.other_actor;
-        if (_main_arrow->is_locked() && processing_operations[stage.main_actor].find(main_point_actor_from) != processing_operations[stage.main_actor].end()) {
+        if (_main_arrow->is_locked() && should_color(stage.main_actor, main_point_actor_from)) {
             _arrow->set_color(Color(240, 230, 140));
         }
         else {
