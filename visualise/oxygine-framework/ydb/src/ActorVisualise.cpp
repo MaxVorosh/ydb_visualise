@@ -140,7 +140,7 @@ bool ActorVisualise::should_color() {
         }
         last_time = new_time;
         actor = actors_info[actor].messages[index].second;
-        // std::cout << actor << ' ' << last_time << std::endl;
+        std::cout << actor << ' ' << last_time << std::endl;
         index = find_by_timestamp(lock_stage, actors_info[actor].messages);
     }
     // std::cout << "Finish " << last_time << ' ' << current_index << std::endl;
@@ -152,7 +152,7 @@ void ActorVisualise::process_stage() {
         if (!differ) {
             _arrow = _helper_arrow;
             differ = true;
-            lock_stage = current_index;
+            lock_stage = current_index - 1;
             main_point_actor_to = point_actor_to;
             main_point_actor_from = point_actor_from;
         }
@@ -190,7 +190,7 @@ void ActorVisualise::process_stage() {
         is_pointed = true;
         point_actor_from = stage.main_actor;
         point_actor_to = stage.other_actor;
-        if (_main_arrow->is_locked() && should_color()) {
+        if (current_index != lock_stage && _main_arrow->is_locked() && should_color()) {
             _arrow->set_color(Color(240, 230, 140));
         }
         else {
