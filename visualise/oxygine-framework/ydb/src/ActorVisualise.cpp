@@ -129,16 +129,21 @@ void ActorVisualise::draw_arrow(spArrow moving_arrow, std::string from_actor, st
 }
 
 bool ActorVisualise::should_color() {
-    std::string& actor = main_point_actor_to;
+    std::string actor = main_point_actor_to;
     int last_time = lock_stage;
     // std::cout << "Start " << current_index << ' ' << actor << ' ' << last_time << std::endl;
     int index = find_by_timestamp(lock_stage, actors_info[actor].messages);
     while (index < actors_info[actor].messages.size()) {
-        last_time = actors_info[actor].messages[index].first;
+        int new_time = actors_info[actor].messages[index].first;
+        if (new_time > current_index) {
+            break;
+        }
+        last_time = new_time;
         actor = actors_info[actor].messages[index].second;
-        // std::cout << "Start " << actor << ' ' << last_time << std::endl;
+        // std::cout << actor << ' ' << last_time << std::endl;
         index = find_by_timestamp(lock_stage, actors_info[actor].messages);
     }
+    // std::cout << "Finish " << last_time << ' ' << current_index << std::endl;
     return (last_time == current_index);
 }
 
