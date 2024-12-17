@@ -251,13 +251,7 @@ namespace NActors {
 
                     std::string receiver_actor = actor->SelfId().ToString();
                     std::string sender_actor = ev->Sender.ToString();
-                    with_lock(ActorSystem->VisualiseLogLock) {
-                        ActorSystem->VisualiseLogger->add_operation(StageInfo(StageType::StartProcess, receiver_actor, sender_actor, ""));
-                    }
                     actor->Receive(ev);
-                    with_lock(ActorSystem->VisualiseLogLock) {
-                        ActorSystem->VisualiseLogger->add_operation(StageInfo(StageType::EndProcess, receiver_actor, sender_actor, ""));
-                    }
 
                     hpnow = GetCycleCountFast();
                     hpprev = TlsThreadContext->UpdateStartOfProcessingEventTS(hpnow);

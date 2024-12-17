@@ -10,6 +10,7 @@ using namespace oxygine;
 struct ActorInfo {
     int pos;
     std::pair<float, float> coords;
+    std::vector<std::pair<int, std::string>> messages;
     ActorInfo();
     ActorInfo(int _pos, std::pair<float, float> _coords);
 };
@@ -40,10 +41,10 @@ private:
     bool is_actor_valid(std::string actor);
     void add_new_actor(std::string name, std::string activity_type, std::string type, int x, int y, int size);
     void onEvent(Event* ev);
-    void draw_arrow(std::string from_actor, std::string to_actor);
+    void draw_arrow(spArrow moving_arrow, std::string from_actor, std::string to_actor);
     void move(float dx, float dy);
     void update_scale();
-    bool should_color(std::string main_actor, std::string locked_actor);
+    bool should_color();
 
     float time = 0;
     const float time_limit = 300;
@@ -58,14 +59,13 @@ private:
     bool differ = false;
     int lock_stage = -1;
 
-    std::unordered_map<std::string, std::unordered_multiset<std::string>> processing_operations;
-
     bool on_pause = false;
     bool on_reverse = false;
     spFramedProgressBar progress_bar;
     const int actor_size = 50;
     std::string point_actor_from;
     std::string point_actor_to;
+    std::string main_point_actor_to;
     std::string main_point_actor_from;
     bool is_pointed;
     float scale = 1.0;

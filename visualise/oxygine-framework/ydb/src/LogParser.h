@@ -5,7 +5,7 @@
 #include <set>
 #include <unordered_map>
 
-enum class StageType {New, Register, Send, StartProcess, EndProcess};
+enum class StageType {New, Register, Send};
 enum class LogType {Text, Binary};
 
 struct LogActorInfo {
@@ -38,7 +38,7 @@ private:
     std::vector<StageInfo> stages;
     std::set<std::string> actors;
     std::vector<LogActorInfo> actor_info;
-    const std::string types[6] = {"New", "Register", "Send", "StartProcess", "EndProcess", "Other"};
+    const std::string types[4] = {"New", "Register", "Send", "StartProcess"};
     LogType type;
 
     void read_types(std::ifstream& fin, std::vector<std::string>& data);

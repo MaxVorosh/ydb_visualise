@@ -9,6 +9,22 @@
 #include <unordered_map>
 #include <queue>
 
+int find_by_timestamp(int timestamp, std::vector<std::pair<int, std::string>>& data) {
+    // Binary search
+    int l = -1;
+    int r = data.size();
+    while (r - l > 1) {
+        int m = (r + l) / 2;
+        if (data[m].first <= timestamp) {
+            l = m;
+        }
+        else {
+            r = m;
+        }
+    }
+    return r;
+}
+
 ActorInfo::ActorInfo() {
 }
 
@@ -39,20 +55,15 @@ void ActorVisualise::add_new_actor(std::string name, std::string activity_type, 
 
     _actors.back()->disable();
     actors_info[name] = ActorInfo(current_actors, {x + size / 2, y + size / 2});
-    std::cout << name << std::endl;
 }
 
 void ActorVisualise::init(std::string log_filename)
 {
     parser.parse(log_filename);
-    // std::cout << "Parsed. Find " << parser.getActors().size() << " actors!" << std::endl;
-    //scene layer would have size of display
     int side = sqrt(parser.getActorsInfo().size());
     auto size = getStage()->getSize();
     int space = 50;
     int stride = actor_size + space;
-    // int min_x = (side - size.x / stride) / 2 * stride;
-    // int min_y = (side - size.y / stride) / 2 * stride;
     int min_x = 10;
     int min_y = 10;
     int row = 0;
@@ -106,33 +117,29 @@ std::pair<float, float> ActorVisualise::get_actor_coords(std::string actor) {
     return actors_info[actor].coords;
 }
 
-void ActorVisualise::draw_arrow(std::string from_actor, std::string to_actor) {
+void ActorVisualise::draw_arrow(spArrow moving_arrow, std::string from_actor, std::string to_actor) {
     if (!is_actor_valid(from_actor) || !is_actor_valid(to_actor)) {
-        _arrow->disable();
+        moving_arrow->disable();
         return;
     }
-    _arrow->enable();
+    moving_arrow->enable();
     auto from_coords = get_actor_coords(from_actor);
     auto to_coords = get_actor_coords(to_actor);
-    _arrow->point(from_coords.first, from_coords.second, to_coords.first, to_coords.second);
+    moving_arrow->point(from_coords.first, from_coords.second, to_coords.first, to_coords.second);
 }
 
-bool ActorVisualise::should_color(std::string main_actor, std::string locked_actor) {
-    std::queue<std::string> actors_queue;
-    for (auto actor: processing_operations[main_actor]) {
-        actors_queue.push(actor);
+bool ActorVisualise::should_color() {
+    std::string& actor = main_point_actor_to;
+    int last_time = lock_stage;
+    // std::cout << "Start " << current_index << ' ' << actor << ' ' << last_time << std::endl;
+    int index = find_by_timestamp(lock_stage, actors_info[actor].messages);
+    while (index < actors_info[actor].messages.size()) {
+        last_time = actors_info[actor].messages[index].first;
+        actor = actors_info[actor].messages[index].second;
+        // std::cout << "Start " << actor << ' ' << last_time << std::endl;
+        index = find_by_timestamp(lock_stage, actors_info[actor].messages);
     }
-    while (!actors_queue.empty()) {
-        std::string actor = actors_queue.front();
-        actors_queue.pop();
-        if (actor == locked_actor) {
-            return true;
-        }
-        for (auto next_actor: processing_operations[actor]) {
-            actors_queue.push(next_actor);
-        }
-    }
-    return false;
+    return (last_time == current_index);
 }
 
 void ActorVisualise::process_stage() {
@@ -141,6 +148,7 @@ void ActorVisualise::process_stage() {
             _arrow = _helper_arrow;
             differ = true;
             lock_stage = current_index;
+            main_point_actor_to = point_actor_to;
             main_point_actor_from = point_actor_from;
         }
     }
@@ -168,35 +176,21 @@ void ActorVisualise::process_stage() {
         if (!is_actor_valid(stage.other_actor)) {
             return;
         }
-        draw_arrow(stage.main_actor, stage.other_actor);
+        if (actors_info[stage.main_actor].messages.empty() ||
+             current_index > actors_info[stage.main_actor].messages.back().first) {
+            actors_info[stage.main_actor].messages.push_back({current_index, stage.other_actor});
+        }
+        draw_arrow(_arrow, stage.main_actor, stage.other_actor);
         _arrow->set_type(stage.info);
         is_pointed = true;
         point_actor_from = stage.main_actor;
         point_actor_to = stage.other_actor;
-        if (_main_arrow->is_locked() && should_color(stage.main_actor, main_point_actor_from)) {
+        if (_main_arrow->is_locked() && should_color()) {
             _arrow->set_color(Color(240, 230, 140));
         }
         else {
             _arrow->set_color(Color(0, 0, 255));
         }
-    }
-    else if (stage.type == StageType::StartProcess) {
-        if (!is_actor_valid(stage.other_actor)) {
-            return;
-        }
-        if (processing_operations.find(stage.main_actor) == processing_operations.end()) {
-            processing_operations[stage.main_actor] = {};
-        }
-        processing_operations[stage.main_actor].insert(stage.other_actor);
-    }
-    else if (stage.type == StageType::EndProcess) {
-        if (!is_actor_valid(stage.other_actor)) {
-            return;
-        }
-        if (processing_operations.find(stage.main_actor) == processing_operations.end()) {
-            return;
-        }
-        processing_operations[stage.main_actor].erase(stage.other_actor);
     }
 }
 
@@ -222,24 +216,6 @@ void ActorVisualise::undo_stage() {
         main_actor->deactivate();
     }
     else if (stage.type == StageType::Send) {}
-    else if (stage.type == StageType::EndProcess) {
-        if (!is_actor_valid(stage.other_actor)) {
-            return;
-        }
-        if (processing_operations.find(stage.main_actor) != processing_operations.end()) {
-            processing_operations[stage.main_actor] = {};
-        }
-        processing_operations[stage.main_actor].insert(stage.other_actor);
-    }
-    else if (stage.type == StageType::StartProcess) {
-        if (!is_actor_valid(stage.other_actor)) {
-            return;
-        }
-        if (processing_operations.find(stage.main_actor) != processing_operations.end()) {
-            return;
-        }
-        processing_operations[stage.main_actor].erase(stage.other_actor);
-    }
 }
 
 void ActorVisualise::doUpdate(const UpdateState& us)
@@ -285,7 +261,10 @@ void ActorVisualise::move(float dx, float dy) {
         actors_info[actor_name].coords.second += dy;
     }
     if (is_pointed) {
-        draw_arrow(point_actor_from, point_actor_to);
+        draw_arrow(_arrow, point_actor_from, point_actor_to);
+        if (differ) {
+            draw_arrow(_main_arrow, main_point_actor_from, main_point_actor_to);
+        }
     }
 }
 
@@ -294,6 +273,7 @@ void ActorVisualise::update_scale() {
         actor->set_scale(scale);
     }
     _arrow->set_scale(scale);
+    _main_arrow->set_scale(scale);
 }
 
 void ActorVisualise::onEvent(Event* ev)
