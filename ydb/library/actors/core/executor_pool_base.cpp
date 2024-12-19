@@ -16,7 +16,7 @@ namespace NActors {
             auto type_index = actor->GetActivityType();
             std::string activity_type = GetActivityTypeName(type_index).data();
             std::string actor_type = abi::__cxa_demangle(typeid(*actor).name(), nullptr, nullptr, nullptr);
-            sys->VisualiseLogger->add_operation(StageInfo(StageType::New, self.ToString(), actor_type, activity_type));
+            sys->VisualiseLogger->add_operation(new NewStageInfo{self.ToString(), actor_type, activity_type});
         }
         // TODO: Not all of actors going through DoActorInit for some reason
         actor->SelfActorId = self;

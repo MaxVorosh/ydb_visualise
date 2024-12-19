@@ -34,6 +34,8 @@ ActorInfo::ActorInfo(int _pos, std::pair<float, float> _coords) {
 }
 
 ActorVisualise::ActorVisualise() {
+    processor = VisualiseStageProcessor(this);
+    undoer = VisualiseStageUndoer(this);
     parser = new TextLogParser;
     // parser = new BinaryLogParser;
     ox::core::getDispatcher()->addEventListener(ox::core::EVENT_SYSTEM, CLOSURE(this, &ActorVisualise::onEvent));
@@ -138,7 +140,6 @@ void ActorVisualise::draw_arrow(spArrow moving_arrow, std::string from_actor, st
 bool ActorVisualise::should_color() {
     std::string actor = main_point_actor_to;
     int last_time = lock_stage;
-    // std::cout << "Start " << current_index << ' ' << actor << ' ' << last_time << std::endl;
     int index = find_by_timestamp(lock_stage, actors_info[actor].messages);
     while (index < actors_info[actor].messages.size()) {
         int new_time = actors_info[actor].messages[index].first;
@@ -147,10 +148,8 @@ bool ActorVisualise::should_color() {
         }
         last_time = new_time;
         actor = actors_info[actor].messages[index].second;
-        std::cout << actor << ' ' << last_time << std::endl;
         index = find_by_timestamp(lock_stage, actors_info[actor].messages);
     }
-    // std::cout << "Finish " << last_time << ' ' << current_index << std::endl;
     return (last_time == current_index);
 }
 
@@ -172,38 +171,11 @@ void ActorVisualise::process_stage() {
     }
     _arrow->disable();
     is_pointed = false;
-    StageInfo stage = parser->getStages()[current_index];
-    if (!is_actor_valid(stage.main_actor)) {
+    StageInfo* stage = parser->getStages()[current_index];
+    if (!is_actor_valid(stage->main_actor)) {
         return;
     }
-    spActorModel main_actor = get_actor(stage.main_actor);
-    if (stage.type == StageType::New) {
-        main_actor->set_visibility(true);
-        main_actor->enable();
-    }
-    else if (stage.type == StageType::Register) {
-        main_actor->activate();
-    }
-    else if (stage.type == StageType::Send) {
-        if (!is_actor_valid(stage.other_actor)) {
-            return;
-        }
-        if (actors_info[stage.main_actor].messages.empty() ||
-             current_index > actors_info[stage.main_actor].messages.back().first) {
-            actors_info[stage.main_actor].messages.push_back({current_index, stage.other_actor});
-        }
-        draw_arrow(_arrow, stage.main_actor, stage.other_actor);
-        _arrow->set_type(stage.info);
-        is_pointed = true;
-        point_actor_from = stage.main_actor;
-        point_actor_to = stage.other_actor;
-        if (current_index != lock_stage && _main_arrow->is_locked() && should_color()) {
-            _arrow->set_color(Color(240, 230, 140));
-        }
-        else {
-            _arrow->set_color(Color(0, 0, 255));
-        }
-    }
+    stage->accept(&processor);
 }
 
 void ActorVisualise::undo_stage() {
@@ -215,19 +187,11 @@ void ActorVisualise::undo_stage() {
     }
     _arrow->disable();
     is_pointed = false;
-    StageInfo stage = parser->getStages()[current_index];
-    if (!is_actor_valid(stage.main_actor)) {
+    StageInfo* stage = parser->getStages()[current_index];
+    if (!is_actor_valid(stage->main_actor)) {
         return;
     }
-    spActorModel main_actor = get_actor(stage.main_actor);
-    if (stage.type == StageType::New) {
-        main_actor->set_visibility(false);
-        main_actor->disable();
-    }
-    else if (stage.type == StageType::Register) {
-        main_actor->deactivate();
-    }
-    else if (stage.type == StageType::Send) {}
+    stage->accept(&undoer);
 }
 
 void ActorVisualise::doUpdate(const UpdateState& us)
@@ -344,3 +308,57 @@ void ActorVisualise::onEvent(Event* ev)
             break;
     }
 }
+
+VisualiseStageProcessor::VisualiseStageProcessor(ActorVisualise* scene) {
+    this->scene = scene;
+}
+
+void VisualiseStageProcessor::visit(NewStageInfo* stage) {
+    spActorModel main_actor = scene->get_actor(stage->main_actor);
+    main_actor->set_visibility(true);
+    main_actor->enable();
+}
+
+void VisualiseStageProcessor::visit(RegisterStageInfo* stage) {
+    spActorModel main_actor = scene->get_actor(stage->main_actor);
+    main_actor->activate();
+}
+
+void VisualiseStageProcessor::visit(SendStageInfo* stage) {
+    spActorModel main_actor = scene->get_actor(stage->main_actor);
+    if (!scene->is_actor_valid(stage->other_actor)) {
+        return;
+    }
+    if (scene->actors_info[stage->main_actor].messages.empty() ||
+            scene->current_index > scene->actors_info[stage->main_actor].messages.back().first) {
+        scene->actors_info[stage->main_actor].messages.push_back({scene->current_index, stage->other_actor});
+    }
+    scene->draw_arrow(scene->_arrow, stage->main_actor, stage->other_actor);
+    scene->_arrow->set_type(stage->type);
+    scene->is_pointed = true;
+    scene->point_actor_from = stage->main_actor;
+    scene->point_actor_to = stage->other_actor;
+    if (scene->current_index != scene->lock_stage && scene->_main_arrow->is_locked() && scene->should_color()) {
+        scene->_arrow->set_color(Color(240, 230, 140));
+    }
+    else {
+        scene->_arrow->set_color(Color(0, 0, 255));
+    }
+}
+
+VisualiseStageUndoer::VisualiseStageUndoer(ActorVisualise* scene) {
+    this->scene = scene;
+}
+
+void VisualiseStageUndoer::visit(NewStageInfo* stage) {
+    spActorModel main_actor = scene->get_actor(stage->main_actor);
+    main_actor->set_visibility(false);
+    main_actor->disable();
+}
+
+void VisualiseStageUndoer::visit(RegisterStageInfo* stage) {
+    spActorModel main_actor = scene->get_actor(stage->main_actor);
+    main_actor->deactivate();
+}
+
+void VisualiseStageUndoer::visit(SendStageInfo* stage) {}

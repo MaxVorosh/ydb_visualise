@@ -7,6 +7,31 @@
 #include <string>
 using namespace oxygine;
 
+
+class ActorVisualise;
+
+class VisualiseStageProcessor: public StageInfoVisitor {
+public:
+    VisualiseStageProcessor() = default;
+    VisualiseStageProcessor(ActorVisualise* scene);
+    void visit(NewStageInfo* stage) override;
+    void visit(RegisterStageInfo* stage) override;
+    void visit(SendStageInfo* stage) override;
+private:
+    ActorVisualise* scene;
+};
+
+class VisualiseStageUndoer: public StageInfoVisitor {
+public:
+    VisualiseStageUndoer() = default;
+    VisualiseStageUndoer(ActorVisualise* scene);
+    void visit(NewStageInfo* stage) override;
+    void visit(RegisterStageInfo* stage) override;
+    void visit(SendStageInfo* stage) override;
+private:
+    ActorVisualise* scene;
+};
+
 struct ActorInfo {
     int pos;
     std::pair<float, float> coords;
@@ -23,6 +48,8 @@ DECLARE_SMART(ActorModel, spActorModel);
 DECLARE_SMART(ActorVisualise, spActorVisualise);
 class ActorVisualise: public Actor
 {
+    friend class VisualiseStageProcessor;
+    friend class VisualiseStageUndoer;
 public:
     ActorVisualise();
     ~ActorVisualise();
@@ -30,6 +57,8 @@ public:
     void init(std::string log_filename);
 
 private:
+    VisualiseStageProcessor processor;
+    VisualiseStageUndoer undoer;
     LogParser* parser;
     friend class ActorModel;
     friend class Arrow;

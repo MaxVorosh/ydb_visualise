@@ -483,7 +483,7 @@ namespace NActors {
             TlsThreadContext->SendingType = previousType;
         }
         with_lock(VisualiseLogLock) {
-            VisualiseLogger->add_operation(StageInfo(StageType::Register, id.ToString(), "", ""));
+            VisualiseLogger->add_operation(new RegisterStageInfo(id.ToString()));
         }
         return id;
     }
