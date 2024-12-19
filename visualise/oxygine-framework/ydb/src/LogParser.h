@@ -29,23 +29,30 @@ struct StageInfo {
 
 class LogParser {
 public:
-    LogParser(LogType type);
-    void parse(std::string filename);
+    virtual void parse(std::string filename) = 0;
     std::vector<StageInfo>& getStages();
     std::set<std::string>& getActors();
     std::vector<LogActorInfo>& getActorsInfo();
-private:
+protected:
     std::vector<StageInfo> stages;
     std::set<std::string> actors;
     std::vector<LogActorInfo> actor_info;
-    const std::string types[4] = {"New", "Register", "Send", "StartProcess"};
-    LogType type;
+};
 
+class TextLogParser: public LogParser {
+public:
+    void parse(std::string filename) override;
+};
+
+class BinaryLogParser: public LogParser {
+public:
+    void parse(std::string filename) override;
+private:
     void read_types(std::ifstream& fin, std::vector<std::string>& data);
     std::string read_actor_id(std::ifstream& fin);
-    void parse_binary(std::string filename);
-    void parse_text(std::string filename);
+    const std::string types[4] = {"New", "Register", "Send", "Other"};
 };
+
 
 class LogWriter {
 public:

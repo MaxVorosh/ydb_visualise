@@ -31,11 +31,7 @@ StageInfo::StageInfo(StageType type, std::string actor_from, std::string actor_t
     this->info = info;
 }
 
-LogParser::LogParser(LogType type) {
-    this->type = type;
-}
-
-void LogParser::read_types(std::ifstream& fin, std::vector<std::string>& data) {
+void BinaryLogParser::read_types(std::ifstream& fin, std::vector<std::string>& data) {
     unsigned char size;
     fin.read(reinterpret_cast<char*>(&size), sizeof(size));
     data.resize(size);
@@ -49,7 +45,7 @@ void LogParser::read_types(std::ifstream& fin, std::vector<std::string>& data) {
     }
 }
 
-std::string LogParser::read_actor_id(std::ifstream& fin) {
+std::string BinaryLogParser::read_actor_id(std::ifstream& fin) {
     std::uint32_t node_id;
     std::uint64_t local_id;
     std::uint32_t hint;
@@ -59,15 +55,7 @@ std::string LogParser::read_actor_id(std::ifstream& fin) {
     return "[" + std::to_string(node_id) + ':' + std::to_string(local_id) + ':' + std::to_string(hint) + ']';
 }
 
-void LogParser::parse(std::string filename) {
-    if (type == LogType::Binary) {
-        parse_binary(filename);
-        return;
-    }
-    parse_text(filename);
-}
-
-void LogParser::parse_text(std::string filename) {
+void TextLogParser::parse(std::string filename) {
     stages.clear();
     actors.clear();
     std::ifstream fin(filename);
@@ -114,7 +102,7 @@ void LogParser::parse_text(std::string filename) {
     }
 }
 
-void LogParser::parse_binary(std::string filename) {
+void BinaryLogParser::parse(std::string filename) {
     stages.clear();
     actors.clear();
     std::ifstream fin(filename, std::ios::binary);

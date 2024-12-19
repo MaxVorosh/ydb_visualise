@@ -25,11 +25,12 @@ class ActorVisualise: public Actor
 {
 public:
     ActorVisualise();
+    ~ActorVisualise();
 
     void init(std::string log_filename);
 
 private:
-    LogParser parser = LogParser(LogType::Text);
+    LogParser* parser;
     friend class ActorModel;
     friend class Arrow;
     void doUpdate(const UpdateState& us);

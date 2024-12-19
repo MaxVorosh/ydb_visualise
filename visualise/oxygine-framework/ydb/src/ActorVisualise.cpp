@@ -34,8 +34,14 @@ ActorInfo::ActorInfo(int _pos, std::pair<float, float> _coords) {
 }
 
 ActorVisualise::ActorVisualise() {
+    parser = new TextLogParser;
+    // parser = new BinaryLogParser;
     ox::core::getDispatcher()->addEventListener(ox::core::EVENT_SYSTEM, CLOSURE(this, &ActorVisualise::onEvent));
     _resources.loadXML("res.xml");
+}
+
+ActorVisualise::~ActorVisualise() {
+    delete parser;
 }
 
 void ActorVisualise::add_new_actor(std::string name, std::string activity_type, std::string type, int x, int y, int size) {
@@ -59,8 +65,8 @@ void ActorVisualise::add_new_actor(std::string name, std::string activity_type, 
 
 void ActorVisualise::init(std::string log_filename)
 {
-    parser.parse(log_filename);
-    int side = sqrt(parser.getActorsInfo().size());
+    parser->parse(log_filename);
+    int side = sqrt(parser->getActorsInfo().size());
     auto size = getStage()->getSize();
     int space = 50;
     int stride = actor_size + space;
@@ -69,7 +75,7 @@ void ActorVisualise::init(std::string log_filename)
     int row = 0;
     int column = 0;
 
-    for (auto actor_info: parser.getActorsInfo()) {
+    for (auto actor_info: parser->getActorsInfo()) {
         int x = min_x + stride * column;
         int y = min_y + stride * row;
         add_new_actor(actor_info.name, actor_info.activity_type, actor_info.type, x, y, actor_size);
@@ -79,6 +85,7 @@ void ActorVisualise::init(std::string log_filename)
             row++;
         }
     }
+
 
     style = TextStyle(_resources.getResFont("main"));
     style.fontSize = 15;
@@ -165,7 +172,7 @@ void ActorVisualise::process_stage() {
     }
     _arrow->disable();
     is_pointed = false;
-    StageInfo stage = parser.getStages()[current_index];
+    StageInfo stage = parser->getStages()[current_index];
     if (!is_actor_valid(stage.main_actor)) {
         return;
     }
@@ -208,7 +215,7 @@ void ActorVisualise::undo_stage() {
     }
     _arrow->disable();
     is_pointed = false;
-    StageInfo stage = parser.getStages()[current_index];
+    StageInfo stage = parser->getStages()[current_index];
     if (!is_actor_valid(stage.main_actor)) {
         return;
     }
@@ -247,17 +254,17 @@ void ActorVisualise::doUpdate(const UpdateState& us)
             }
         }
         else {
-            if (current_index < parser.getStages().size()) {
+            if (current_index < parser->getStages().size()) {
                 process_stage();
                 current_index++;
             }
         }
     }
-    progress_bar->setProgress(current_index / (float)parser.getStages().size());
+    progress_bar->setProgress(current_index / (float)parser->getStages().size());
 }
 
 void ActorVisualise::move(float dx, float dy) {
-    for (auto actor_name: parser.getActors()) {
+    for (auto actor_name: parser->getActors()) {
         auto actor = get_actor(actor_name);
         auto info = actors_info[actor_name];
         auto coords = info.coords;
