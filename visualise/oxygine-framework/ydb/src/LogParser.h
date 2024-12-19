@@ -6,7 +6,6 @@
 #include <unordered_map>
 
 enum class StageType {New, Register, Send};
-enum class LogType {Text, Binary};
 
 struct LogActorInfo {
     std::string name;
@@ -56,28 +55,40 @@ private:
 
 class LogWriter {
 public:
-    LogWriter(std::string filename, int max_operations, LogType type);
-    ~LogWriter();
-    void add_operation(StageInfo op);
-private:
+    LogWriter(std::string filename, int max_operations);
+    virtual ~LogWriter() = default;
+    virtual void add_operation(StageInfo op) = 0;
+protected:
     std::vector<StageInfo> operations;
+    std::string filename;
+    int max_operations;
+
+    virtual void write_file() = 0;
+};
+
+class TextLogWriter: public LogWriter {
+public:
+    TextLogWriter(std::string filename, int max_operations): LogWriter(filename, max_operations) {};
+    void add_operation(StageInfo op) override;
+    ~TextLogWriter();
+protected:
+    void write_file() override;
+};
+
+class BinaryLogWriter: public LogWriter {
+public:
+    BinaryLogWriter(std::string filename, int max_operations): LogWriter(filename, max_operations) {};
+    void add_operation(StageInfo op) override;
+    ~BinaryLogWriter();
+protected:
     std::unordered_map<std::string, unsigned char> activity_types;
     std::unordered_map<std::string, unsigned char> actor_types;
     std::unordered_map<std::string, unsigned char> send_types;
-    std::string filename;
-    int max_operations;
-    LogType type;
 
-    void write_file();
+    void write_file() override;
     void write_map(std::ofstream& fout, std::unordered_map<std::string, unsigned char>& data);
     unsigned char type_to_int(StageType type);
     
     using hash_values = std::pair<std::pair<std::uint32_t, std::uint64_t>, std::uint32_t>;
     hash_values parse_actor_id(std::string actor_id);
-
-    void add_operation_binary(StageInfo op);
-    void add_operation_text(StageInfo op);
-
-    void write_file_binary();
-    void write_file_text();
 };

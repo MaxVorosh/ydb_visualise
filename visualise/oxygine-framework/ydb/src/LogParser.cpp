@@ -177,32 +177,30 @@ std::vector<LogActorInfo>& LogParser::getActorsInfo() {
     return actor_info;
 }
 
-LogWriter::LogWriter(std::string filename, int max_operations, LogType type) {
+LogWriter::LogWriter(std::string filename, int max_operations) {
     this->filename = filename;
     this->max_operations = max_operations;
-    this->type = type;
 }
 
-LogWriter::~LogWriter() {
+BinaryLogWriter::~BinaryLogWriter() {
     write_file();
 }
 
-void LogWriter::add_operation(StageInfo op) {
-    if (max_operations <= static_cast<int>(operations.size())) {
-        return;
-    }
-    if (type == LogType::Binary) {
-        add_operation_binary(op);
-        return;
-    }
-    add_operation_text(op);
+TextLogWriter::~TextLogWriter() {
+    write_file();
 }
 
-void LogWriter::add_operation_text(StageInfo op) {
+void TextLogWriter::add_operation(StageInfo op) {
+    if (static_cast<int>(operations.size()) >= max_operations) {
+        return;
+    }
     operations.push_back(op);
 }
 
-void LogWriter::add_operation_binary(StageInfo op) {
+void BinaryLogWriter::add_operation(StageInfo op) {
+    if (static_cast<int>(operations.size()) >= max_operations) {
+        return;
+    }
     operations.push_back(op);
     if (op.type == StageType::New) {
         // Assuming other_actor contains actor_type, info contains activity_type
@@ -221,7 +219,7 @@ void LogWriter::add_operation_binary(StageInfo op) {
     }
 }
 
-void LogWriter::write_map(std::ofstream& fout, std::unordered_map<std::string, unsigned char>& data) {
+void BinaryLogWriter::write_map(std::ofstream& fout, std::unordered_map<std::string, unsigned char>& data) {
     unsigned char types_cnt = data.size();
     fout.write(reinterpret_cast<char*>(&types_cnt), sizeof(types_cnt));
     for (auto type: data) {
@@ -231,7 +229,7 @@ void LogWriter::write_map(std::ofstream& fout, std::unordered_map<std::string, u
     }
 }
 
-LogWriter::hash_values LogWriter::parse_actor_id(std::string actor_id) {
+BinaryLogWriter::hash_values BinaryLogWriter::parse_actor_id(std::string actor_id) {
     int first_delimeter = actor_id.find(':');
     int last_delimeter = actor_id.find(':');
     std::string node_id = actor_id.substr(1, first_delimeter - 1);
@@ -240,7 +238,7 @@ LogWriter::hash_values LogWriter::parse_actor_id(std::string actor_id) {
     return {{std::atoi(node_id.c_str()), std::atoll(local_id.c_str())}, std::atoi(hint.c_str())};
 }
 
-unsigned char LogWriter::type_to_int(StageType type) {
+unsigned char BinaryLogWriter::type_to_int(StageType type) {
     if (type == StageType::New) {
         return 0;
     }
@@ -253,15 +251,7 @@ unsigned char LogWriter::type_to_int(StageType type) {
     return 3;
 }
 
-void LogWriter::write_file() {
-    if (type == LogType::Binary) {
-        write_file_binary();
-        return;
-    }
-    write_file_text();
-}
-
-void LogWriter::write_file_text() {
+void TextLogWriter::write_file() {
     std::ofstream fout(filename);
     for (auto op: operations) {
         if (op.type == StageType::Send) {
@@ -276,7 +266,7 @@ void LogWriter::write_file_text() {
     }
 }
 
-void LogWriter::write_file_binary() {
+void BinaryLogWriter::write_file() {
     std::ofstream fout(filename, std::ios::binary);
     write_map(fout, actor_types);
     write_map(fout, activity_types);
@@ -284,7 +274,7 @@ void LogWriter::write_file_binary() {
     std::uint32_t operations_cnt = operations.size();
     fout.write(reinterpret_cast<char*>(&operations_cnt), sizeof(operations_cnt));
     for (auto op: operations) {
-        LogWriter::hash_values actor_hash = parse_actor_id(op.main_actor);
+        BinaryLogWriter::hash_values actor_hash = parse_actor_id(op.main_actor);
         unsigned char stage_type = type_to_int(op.type);
         fout.write(reinterpret_cast<char*>(&stage_type), sizeof(stage_type));
         std::uint32_t node_id = actor_hash.first.first;
@@ -302,7 +292,7 @@ void LogWriter::write_file_binary() {
         }
         if (op.type == StageType::Send) {
             // Assuming info contains send_type
-            LogWriter::hash_values other_actor_hash = parse_actor_id(op.other_actor);
+            BinaryLogWriter::hash_values other_actor_hash = parse_actor_id(op.other_actor);
             std::uint32_t other_node_id = other_actor_hash.first.first;
             std::uint64_t other_local_id = other_actor_hash.first.second;
             std::uint32_t other_hint = other_actor_hash.second;
