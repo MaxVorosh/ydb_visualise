@@ -248,6 +248,9 @@ namespace NActors {
                         TlsThreadContext->ElapsingActorActivity.store(activityType, std::memory_order_release);
                     }
 
+
+                    std::string receiver_actor = actor->SelfId().ToString();
+                    std::string sender_actor = ev->Sender.ToString();
                     actor->Receive(ev);
 
                     hpnow = GetCycleCountFast();

@@ -85,6 +85,7 @@ namespace NActors {
         , StopExecuted(false)
         , CleanupExecuted(false)
     {
+        VisualiseLogger = std::unique_ptr<LogWriter>(new TextLogWriter{"log.txt", 79});
         ServiceMap.Reset(new TServiceMap());
     }
 
@@ -105,7 +106,7 @@ namespace NActors {
         TActorId recipient = ev->GetRecipientRewrite();
         with_lock(VisualiseLogLock) {
             std::string event_type = ev->ToString();
-            std::cerr << "Send" << ' ' << ev->Sender.ToString() << ' ' << recipient.ToString() << ' ' << event_type << std::endl;
+            VisualiseLogger->add_operation(StageInfo(StageType::Send, ev->Sender.ToString(), recipient.ToString(), event_type));
         }
         const ui32 recpNodeId = recipient.NodeId();
 

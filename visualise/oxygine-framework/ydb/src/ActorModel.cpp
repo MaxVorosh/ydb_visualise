@@ -8,7 +8,7 @@ void ActorModel::_init()
     _view->setPosition(_scene->getSize() / 2);
 
     _body = new ColorRectSprite;
-    _body->setSize(100, 100);
+    _body->setSize(base_size_x, base_size_y);
     _body->setColor(Color(255, 0, 0));
     _body->attachTo(_view);
 
@@ -20,14 +20,18 @@ void ActorModel::_init()
 }
 
 void ActorModel::move(int x, int y) {
-    _view->setPosition(x, y);
+    this->x = x;
+    this->y = y;
+    _view->setPosition(x * scale, y * scale);
     auto body_size = _body->getSize();
     _label->setPosition(0, body_size.y);
     // std::cout << x << ' ' << y << ' ' << body_size.x << ' ' << body_size.y << std::endl;
 }
 
 void ActorModel::resize(int x, int y) {
-    _body->setSize(x, y);
+    _body->setSize(x * scale, y * scale);
+    base_size_x = x;
+    base_size_y = y;
 }
 
 void ActorModel::activate() {
@@ -49,12 +53,21 @@ void ActorModel::enable() {
 
 void ActorModel::rename(std::string new_name) {
     name = new_name;
-    _label->setText(name + '\n' + activity_type);
+    update_label();
 }
 
 void ActorModel::set_activity_type(std::string new_activity_type) {
     activity_type = new_activity_type;
-    _label->setText(name + '\n' + activity_type);
+    update_label();
+}
+
+void ActorModel::set_type(std::string new_type) {
+    type = new_type;
+    update_label();
+}
+
+void ActorModel::update_label() {
+    _label->setText(name + '\n' + activity_type + '\n' + type);
 }
 
 void ActorModel::_update(const UpdateState& us)
@@ -75,6 +88,12 @@ std::string ActorModel::get_name() {
 
 void ActorModel::set_style(TextStyle style) {
     _label->setStyle(style);
+}
+
+void ActorModel::set_scale(float scale) {
+    this->scale = scale;
+    resize(base_size_x, base_size_y);
+    move(x, y);
 }
 
 void ActorModel::onClick(Event* ev)

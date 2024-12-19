@@ -12,6 +12,7 @@ void helper_init()
 
     //create scene with game
     spActorVisualise scene = new ActorVisualise;
+    // scene->init("logs/visualise_log");
     scene->init("logs/log.txt");
     scene->attachTo(getStage());
 }
