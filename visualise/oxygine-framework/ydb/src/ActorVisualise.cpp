@@ -113,6 +113,16 @@ void ActorVisualise::init(std::string log_filename)
     pause_button->init(this);
     pause_button->bind_pictures(_resources.getResAnim("pause"), _resources.getResAnim("play"));
     pause_button->move(460, 550);
+
+    backward_button = new NavigationButton;
+    backward_button->init(this);
+    backward_button->bind_pictures(_resources.getResAnim("fbackward"), _resources.getResAnim("fbackward"));
+    backward_button->move(390, 550);
+
+    forward_button = new NavigationButton;
+    forward_button->init(this);
+    forward_button->bind_pictures(_resources.getResAnim("fforward"), _resources.getResAnim("fforward"));
+    forward_button->move(530, 550);
 }
 
 bool ActorVisualise::is_actor_valid(std::string actor) {
@@ -215,6 +225,28 @@ void ActorVisualise::doUpdate(const UpdateState& us)
     if (!should_pause) {
         time += us.dt;
     }
+
+    if (forward_button->get_state()) {
+        forward_button->reset();
+        while (current_index < parser->getStages().size()) {
+            process_stage();
+            current_index++;
+        }
+    }
+
+    if (backward_button->get_state()) {
+        backward_button->reset();
+        while (current_index > 0) {
+            current_index--;
+            undo_stage();
+            if (current_index > 0) {
+                current_index--;
+                process_stage();
+                current_index++;
+            }
+        }
+    }
+
     if (time > time_limit) {
         time = 0;
         if (on_reverse) {
