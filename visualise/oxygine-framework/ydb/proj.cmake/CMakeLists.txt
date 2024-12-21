@@ -8,7 +8,7 @@ link_directories(${OXYGINE_LIBRARY_DIRS})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OXYGINE_CXX_FLAGS}")
 
-add_executable(ActorVisualise ../src/FramedProgressBar.cpp ../src/Arrow.cpp ../src/ActorModel.cpp ../src/helper.cpp ../src/main.cpp ../src/ActorVisualise.cpp ../src/LogParser.cpp ../src/Unit.cpp  ../src/ActorVisualise.h ../src/ActorModel.h ../src/helper.h ../src/LogParser.h ../src/Unit.h ../src/Arrow.h ../src/FramedProgressBar.h ../src/StageInfo.h)
+add_executable(ActorVisualise ../src/Button.cpp ../src/FramedProgressBar.cpp ../src/Arrow.cpp ../src/ActorModel.cpp ../src/helper.cpp ../src/main.cpp ../src/ActorVisualise.cpp ../src/LogParser.cpp ../src/Unit.cpp  ../src/ActorVisualise.h ../src/ActorModel.h ../src/helper.h ../src/LogParser.h ../src/Unit.h ../src/Arrow.h ../src/FramedProgressBar.h ../src/StageInfo.h ../src/Button.h)
 target_link_libraries(ActorVisualise ${OXYGINE_CORE_LIBS})
 
 

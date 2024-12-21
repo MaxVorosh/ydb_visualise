@@ -3,6 +3,7 @@
 #include "Arrow.h"
 #include "LogParser.h"
 #include "FramedProgressBar.h"
+#include "Button.h"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -107,6 +108,11 @@ void ActorVisualise::init(std::string log_filename)
 
     progress_bar = new FramedProgressBar;
     progress_bar->init(this);
+
+    pause_button = new NavigationButton;
+    pause_button->init(this);
+    pause_button->bind_pictures(_resources.getResAnim("pause"), _resources.getResAnim("play"));
+    pause_button->move(460, 550);
 }
 
 bool ActorVisualise::is_actor_valid(std::string actor) {
@@ -201,7 +207,12 @@ void ActorVisualise::doUpdate(const UpdateState& us)
 
     //update player each frame
     // std::cout << time << ' ' << us.dt << std::endl;
-    if (!on_pause) {
+    bool should_pause = pause_button->get_state() ^ on_pause;
+    if (should_pause != on_pause_button) {
+        on_pause_button = should_pause;
+        pause_button->switch_picture();
+    }
+    if (!should_pause) {
         time += us.dt;
     }
     if (time > time_limit) {

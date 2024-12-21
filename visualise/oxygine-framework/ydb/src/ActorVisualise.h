@@ -46,6 +46,7 @@ DECLARE_SMART(Arrow, spArrow);
 DECLARE_SMART(MainArrow, spMainArrow);
 DECLARE_SMART(ActorModel, spActorModel);
 DECLARE_SMART(ActorVisualise, spActorVisualise);
+DECLARE_SMART(NavigationButton, spNavigationButton);
 class ActorVisualise: public Actor
 {
     friend class VisualiseStageProcessor;
@@ -86,6 +87,8 @@ private:
     spArrow _arrow;
     spArrow _helper_arrow;
     spMainArrow _main_arrow;
+    spNavigationButton pause_button;
+    bool on_pause_button = false;
     bool differ = false;
     int lock_stage = -1;
 
