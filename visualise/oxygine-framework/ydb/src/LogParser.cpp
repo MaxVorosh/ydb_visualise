@@ -10,12 +10,14 @@ LogActorInfo::LogActorInfo() {
     name = "";
     activity_type = "";
     type = "";
+    node_id = "";
 }
 
-LogActorInfo::LogActorInfo(std::string name, std::string activity_type, std::string type) {
+LogActorInfo::LogActorInfo(std::string name, std::string activity_type, std::string type, std::string node_id) {
     this->name = name;
     this->activity_type = activity_type;
     this->type = type;
+    this->node_id = node_id;
 }
 
 LogParser::~LogParser() {
@@ -63,14 +65,14 @@ void TextLogParser::parse(std::string filename) {
             if (actors.find(actor_from) == actors.end()) {
                 actors.insert(actor_from);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor_from, activity_type, activity_type));
-                stages.push_back(new NewStageInfo{actor_from, "", ""});
+                actor_info.push_back(LogActorInfo(actor_from, activity_type, activity_type, activity_type));
+                stages.push_back(new NewStageInfo{actor_from, "", "", ""});
             }
             if (actors.find(actor_to) == actors.end()) {
                 actors.insert(actor_to);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
-                stages.push_back(new NewStageInfo{actor_to, "", ""});
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type, activity_type));
+                stages.push_back(new NewStageInfo{actor_to, "", "", ""});
             }
             stages.push_back(new SendStageInfo{actor_from, actor_to, send_type});
         }
@@ -80,17 +82,17 @@ void TextLogParser::parse(std::string filename) {
             if (actors.find(actor) == actors.end()) {
                 actors.insert(actor);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type));
-                stages.push_back(new NewStageInfo{actor, "", ""});
+                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type, activity_type));
+                stages.push_back(new NewStageInfo{actor, "", "", ""});
             }
             stages.push_back(new RegisterStageInfo{actor});
         }
         else if (type == "New") {
-            std::string actor, activity_type, type;
-            fin >> actor >> activity_type >> type;
+            std::string actor, activity_type, type, node_id;
+            fin >> actor >> activity_type >> type >> node_id;
             actors.insert(actor);
-            actor_info.push_back(LogActorInfo(actor, activity_type, type));
-            stages.push_back(new NewStageInfo{actor, "", ""});
+            actor_info.push_back(LogActorInfo(actor, activity_type, type, node_id));
+            stages.push_back(new NewStageInfo{actor, "", "", ""});
         }
     }
 }
@@ -124,14 +126,14 @@ void BinaryLogParser::parse(std::string filename) {
             if (actors.find(actor) == actors.end()) {
                 actors.insert(actor);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type));
-                stages.push_back(new NewStageInfo{actor, "", ""});
+                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type, activity_type));
+                stages.push_back(new NewStageInfo{actor, "", "", ""});
             }
             if (actors.find(actor_to) == actors.end()) {
                 actors.insert(actor_to);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type));
-                stages.push_back(new NewStageInfo{actor_to, "", ""});
+                actor_info.push_back(LogActorInfo(actor_to, activity_type, activity_type, activity_type));
+                stages.push_back(new NewStageInfo{actor_to, "", "", ""});
             }
             stages.push_back(new SendStageInfo{actor, actor_to, send_type});
         }
@@ -139,21 +141,23 @@ void BinaryLogParser::parse(std::string filename) {
             if (actors.find(actor) == actors.end()) {
                 actors.insert(actor);
                 std::string activity_type = "Unknown";
-                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type));
-                stages.push_back(new NewStageInfo{actor, "", ""});
+                actor_info.push_back(LogActorInfo(actor, activity_type, activity_type, activity_type));
+                stages.push_back(new NewStageInfo{actor, "", "", ""});
             }
             stages.push_back(new RegisterStageInfo{actor});
         }
         else if (type == "New") {
             std::string activity_type, actor_type;
             unsigned char activity_type_idx, actor_type_idx;
+            std::uint32_t node_id;
             fin.read(reinterpret_cast<char*>(&activity_type_idx), sizeof(activity_type_idx));
             fin.read(reinterpret_cast<char*>(&actor_type_idx), sizeof(actor_type_idx));
+            fin.read(reinterpret_cast<char*>(&node_id), sizeof(node_id));
             activity_type = activity_types[activity_type_idx];
             actor_type = actor_types[activity_type_idx];
             actors.insert(actor);
-            actor_info.push_back(LogActorInfo(actor, activity_type, actor_type));
-            stages.push_back(new NewStageInfo{actor, "", ""});
+            actor_info.push_back(LogActorInfo(actor, activity_type, actor_type, std::to_string(node_id)));
+            stages.push_back(new NewStageInfo{actor, "", "", ""});
         }
     }
 }
@@ -301,6 +305,8 @@ void BinaryWriteVisitor::visit(NewStageInfo* op) {
     fout->write(reinterpret_cast<char*>(&activity_type), sizeof(activity_type));
     unsigned char actor_type = logger->actor_types[op->actor_type];
     fout->write(reinterpret_cast<char*>(&actor_type), sizeof(actor_type));
+    std::uint32_t node_id = std::atoi(op->node_id.c_str());
+    fout->write(reinterpret_cast<char*>(&node_id), sizeof(node_id));
 }
 
 
@@ -329,7 +335,7 @@ void TextWriteVisitor::set_file_out(std::ofstream* fout) {
 }
 
 void TextWriteVisitor::visit(NewStageInfo* op) {
-    *fout << "New " << op->main_actor << ' ' << op->actor_type << ' ' << op->activity_type << std::endl;
+    *fout << "New " << op->main_actor << ' ' << op->actor_type << ' ' << op->activity_type << ' ' << op->node_id << std::endl;
 }
 
 

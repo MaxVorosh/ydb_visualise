@@ -23,12 +23,14 @@ struct StageInfo {
 struct NewStageInfo: public StageInfo {
     std::string actor_type;
     std::string activity_type;
+    std::string node_id;
 
     NewStageInfo() = default;
-    NewStageInfo(std::string actor, std::string actor_type, std::string activity_type) {
+    NewStageInfo(std::string actor, std::string actor_type, std::string activity_type, std::string node_id) {
         this->main_actor = actor;
         this->actor_type = actor_type;
         this->activity_type = activity_type;
+        this->node_id = node_id;
     }
     
     void accept(StageInfoVisitor* v) override {

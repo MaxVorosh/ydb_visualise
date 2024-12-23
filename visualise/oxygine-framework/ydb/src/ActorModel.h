@@ -20,6 +20,7 @@ public:
     void set_style(TextStyle style);
     void set_scale(float scale);
     void set_type(std::string new_type);
+    std::pair<int, int> get_center_position();
 
 protected:
     void _init();
@@ -41,3 +42,32 @@ protected:
     float y;
 };
 
+DECLARE_SMART(ActorGroup, spActorGroup);
+class ActorGroup: public Unit {
+public:
+    void add_actor(spActorModel actor);
+    void move(int x, int y);
+    std::pair<int, int> get_base_size();
+    void set_node_id(std::string node_id);
+    void set_scale(float scale);
+    void set_style(TextStyle style);
+    void show();
+    std::vector<spActorModel>* get_actors();
+    void attach_actors();
+protected:
+    void _init();
+    void _update(const UpdateState& us);
+
+    spColorRectSprite frame_bg;
+    spColorRectSprite bg;
+    spTextField _label;
+
+    std::string node_id;
+    std::vector<spActorModel> actors;
+    float scale = 1.0;
+    int base_size_x;
+    int base_size_y;
+    int x;
+    int y;
+    TextStyle style;
+};

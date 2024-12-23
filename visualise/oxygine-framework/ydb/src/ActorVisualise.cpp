@@ -47,7 +47,12 @@ ActorVisualise::~ActorVisualise() {
     delete parser;
 }
 
-void ActorVisualise::add_new_actor(std::string name, std::string activity_type, std::string type, int x, int y, int size) {
+void ActorVisualise::add_new_actor(std::string name, std::string activity_type, std::string type, std::string node_id, int x, int y, int size) {
+    if (actor_groups.find(node_id) == actor_groups.end()) {
+        actor_groups[node_id] = new ActorGroup;
+        actor_groups[node_id]->init(this);
+        actor_groups[node_id]->set_node_id(node_id); 
+    }
     int current_actors = _actors.size();
     _actors.push_back(new ActorModel);
     _actors.back()->init(this);
@@ -56,6 +61,8 @@ void ActorVisualise::add_new_actor(std::string name, std::string activity_type, 
     _actors.back()->set_type(type);
     _actors.back()->resize(size, size);
     _actors.back()->move(x, y);
+
+    actor_groups[node_id]->add_actor(_actors.back());
 
     TextStyle style(_resources.getResFont("main"));
     style.fontSize = 15;
@@ -81,7 +88,7 @@ void ActorVisualise::init(std::string log_filename)
     for (auto actor_info: parser->getActorsInfo()) {
         int x = min_x + stride * column;
         int y = min_y + stride * row;
-        add_new_actor(actor_info.name, actor_info.activity_type, actor_info.type, x, y, actor_size);
+        add_new_actor(actor_info.name, actor_info.activity_type, actor_info.type, actor_info.node_id, x, y, actor_size);
         column++;
         if (column == side) {
             column = 0;
@@ -93,6 +100,21 @@ void ActorVisualise::init(std::string log_filename)
     style = TextStyle(_resources.getResFont("main"));
     style.fontSize = 15;
     style.color = Color(255, 255, 255);
+
+    for (auto actor_group: actor_groups) {
+        std::cout << actor_group.first << std::endl;
+        actor_group.second->show();
+        actor_group.second->set_style(style);
+    }
+    move_groups();
+    for (auto actor_group: actor_groups) {
+        actor_group.second->attach_actors();
+        std::vector<spActorModel>* actors_in_group = actor_group.second->get_actors();
+        for (int i = 0; i < actors_in_group->size(); ++i) {
+            auto actor = actors_in_group->at(i);
+            actors_info[actor->get_name()].coords = actor->get_center_position();
+        }
+    }
 
     _main_arrow = new MainArrow;
     _main_arrow->init(this);
@@ -285,6 +307,9 @@ void ActorVisualise::move(float dx, float dy) {
             draw_arrow(_main_arrow, main_point_actor_from, main_point_actor_to);
         }
     }
+    groups_x += dx;
+    groups_y += dy;
+    move_groups();
 }
 
 void ActorVisualise::update_scale() {
@@ -293,6 +318,19 @@ void ActorVisualise::update_scale() {
     }
     _arrow->set_scale(scale);
     _main_arrow->set_scale(scale);
+
+    for (auto actor_group: actor_groups) {
+        actor_group.second->set_scale(scale);
+    }
+    move_groups();
+}
+
+void ActorVisualise::move_groups() {
+    int local_groups_x = groups_x;
+    for (auto actor_group: actor_groups) {
+        actor_group.second->move(local_groups_x * scale, groups_y * scale);
+        local_groups_x += actor_group.second->get_base_size().second;
+    }
 }
 
 void ActorVisualise::onEvent(Event* ev)

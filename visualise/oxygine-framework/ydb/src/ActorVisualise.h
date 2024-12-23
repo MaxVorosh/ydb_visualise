@@ -47,6 +47,7 @@ DECLARE_SMART(MainArrow, spMainArrow);
 DECLARE_SMART(ActorModel, spActorModel);
 DECLARE_SMART(ActorVisualise, spActorVisualise);
 DECLARE_SMART(NavigationButton, spNavigationButton);
+DECLARE_SMART(ActorGroup, spActorGroup);
 class ActorVisualise: public Actor
 {
     friend class VisualiseStageProcessor;
@@ -70,10 +71,11 @@ private:
     spActorModel get_actor(std::string actor);
     std::pair<float, float> get_actor_coords(std::string actor);
     bool is_actor_valid(std::string actor);
-    void add_new_actor(std::string name, std::string activity_type, std::string type, int x, int y, int size);
+    void add_new_actor(std::string name, std::string activity_type, std::string type, std::string node_id, int x, int y, int size);
     void onEvent(Event* ev);
     void draw_arrow(spArrow moving_arrow, std::string from_actor, std::string to_actor);
     void move(float dx, float dy);
+    void move_groups();
     void update_scale();
     bool should_color();
 
@@ -104,6 +106,10 @@ private:
     std::string main_point_actor_from;
     bool is_pointed;
     float scale = 1.0;
+
+    std::unordered_map<std::string, spActorGroup> actor_groups;
+    int groups_x = 5;
+    int groups_y = 5;
 
     TextStyle style;
     Resources _resources;

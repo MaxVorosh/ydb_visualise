@@ -81,9 +81,10 @@ struct LogActorInfo {
     std::string name;
     std::string activity_type;
     std::string type;
+    std::string node_id;
 
     LogActorInfo();
-    LogActorInfo(std::string name, std::string activity_type, std::string type);
+    LogActorInfo(std::string name, std::string activity_type, std::string type, std::string node_id);
 };
 
 class LogParser {
